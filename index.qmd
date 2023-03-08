@@ -1,0 +1,12 @@
+---
+title: "Utilisation de modèles de régression à coefficients variant dans le temps pour la prévision conjoncturelle"
+subtitle: "Atelier D2E"
+author: 
+- Claire du Campe de Rosamel
+- Alain Quartier-la-Tente
+---
+
+
+Ce site web contient l'ensemble des documents utilisés pendant l'atelier D2E du 16 mars 2023 sur l'utilisation de modèles de régression à coefficients variant dans le temps pour la prévision conjoncturelle.
+
+[Manuel d'installation](manuel_installation.qmd)

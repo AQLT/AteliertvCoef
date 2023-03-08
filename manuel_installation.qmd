@@ -1,0 +1,41 @@
+---
+title: "Installation de `tvCoef`"
+---
+
+Pour utiliser `tvCoef`, il faut il faut avoir la version 17 de Java (ou une version supérieure).
+
+Pour savoir quelle version de Java est utilisée par R, utiliser le code suivant :
+```{r, eval = TRUE}
+library(rJava)
+.jinit()
+.jcall("java/lang/System", "S", "getProperty", "java.runtime.version")
+```
+
+Si le résultat n'est pas sous la forme `"17xxxx"` c'est que vous n'avez pas Java 17 !
+
+Si l'on a pas cette version d'installée et que l'on n'a pas les droits d'administrateur pour installer Java il faut alors installer une version portable de Java.
+Pour installer une version portable de java, télécharger par exemple le fichier `Windows 10 x64 Java Development Kit` disponible sur <https://jdk.java.net/java-se-ri/17>, le dézipper et le mettre par exemple sous `"D:/Programmes/jdk-17"`.  
+
+Pour configurer R avec une version portable de Java, trois solutions :
+
+1. Avant **avant tout chargement de package nécessitant Java (`rJava`...)** (si vous avez lancé le code précédent, relancez donc R) :
+```{r, eval = FALSE}
+Sys.setenv(JAVA_HOME='D:/Programmes/jdk-17')
+```
+
+2. Pour éviter de faire cette manipulation à chaque fois que l'on relance R, deux solutions :  
+
+    a. modifier le `JAVA_HOME` dans les variables d'environnement de Windows (voir <https://confluence.atlassian.com/doc/setting-the-java_home-variable-in-windows-8895.html>).
+    
+    b. modifier le `.Renviron` : depuis R lancer le code `file.edit("~/.Renviron")`{.r}, ajouter dans le fichier le chemin vers la version portable de Java comme précédemment (`JAVA_HOME='D:/Programmes/jdk-17'`), sauvegarder et relancer R.
+
+Il reste maintenant à installer les packages :
+
+```{r, eval = FALSE}
+remotes::install_github("palatej/rjd3toolkit")
+remotes::install_github("palatej/rjd3sts")
+remotes::install_github("AQLT/tvCoef")
+```
+
+Si vous utilisez un ordinateur professionnel, pensez à configurer le proxy pour que ces commandes puissent fonctionner (voir <https://www.book.utilitr.org/01_r_insee/fiche-personnaliser-r#le-fichier-.renviron>).
+Pour cela vous pouvez utiliser `curl::ie_get_proxy_for_url()` pour récupérer l'adresse du proxy et ajouter deux variable `http_proxy` et `https_proxy` dans les variables d'environnement.
