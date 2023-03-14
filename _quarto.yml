@@ -23,3 +23,6 @@ lang: fr
 language:
  title-block-author-plural: Auteurs
  title-block-published: Date
+
+execute:
+  freeze: auto

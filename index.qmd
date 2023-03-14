@@ -9,4 +9,6 @@ author:
 
 Ce site web contient l'ensemble des documents utilisés pendant l'atelier D2E du 16 mars 2023 sur l'utilisation de modèles de régression à coefficients variant dans le temps pour la prévision conjoncturelle.
 
-[Manuel d'installation](manuel_installation.qmd)
+Vous y trouverez les [slides](slides.qmd) ainsi que le [TP](tp.qmd).
+
+Pour le TP, vous pouvez soit utiliser le datalab en cliquant ici [![Onyxia](https://img.shields.io/badge/Launch-Datalab-orange?logo=R)](https://datalab.sspcloud.fr/launcher/ide/rstudio?autoLaunch=true&service.image.custom.enabled=true&service.image.pullPolicy=%C2%ABAlways%C2%BB&service.image.custom.version=%C2%ABaqlt%2Fatelier-tvcoef%3Alatest%C2%BB) soit installer localement les packages en suivant le [manuel d'installation](manuel_installation.qmd).
