@@ -1,0 +1,642 @@
+---
+title: "Utilisation de modèles de régression à coefficients variant dans le temps pour la prévision conjoncturelle"
+subtitle: "Atelier D2E"
+author: 
+- Claire du Campe de Rosamel
+- Alain Quartier-la-Tente
+lang: fr
+language: 
+ title-block-author-plural: Auteurs
+ title-block-published: Date
+format: 
+ html:
+   number-sections: true
+   toc: true
+   css: "css/callout.css"
+date: 03/16/2023
+date-format: "D MMMM YYYY"
+---
+
+> L'objectif de ce TP est d'apprendre à utiliser quelques fonctionnalités du package `tvCoef` pour l'estimation de modèles de régression à coefficients variant dans le temps.
+
+Les packages suivants seront utilisés :
+
+```{r}
+#| eval: false
+packages_to_install <- c("dygraphs", "car", "dynlm")
+
+packages <- installed.packages()[,"Package"][! packages_to_install %in% installed.packages()[,"Package"]]
+if (length(packages) > 0) {
+    install.packages(packages)
+}
+if ("tvCoef" %in% installed.packages()[,"Package"]) {
+  remotes::install_github("palatej/rjd3toolkit")
+  remotes::install_github("palatej/rjd3sts")
+  remotes::install_github("AQLT/tvCoef")
+}
+```
+
+Pour l'installation de tvCoef, voir le [manuel d'installation](manuel_installation.qmd).
+
+Pour ce TP nous utiliserons les données de la base `tvCoef::manufacturing`pour prévoir l'évolution trimestrielle de la production du secteur des autres industries manufacturières (C5, `prod_c5`) à partir de :
+
+- l'acquis de croissance au premier mois du trimestre de l'indice de production industrielle du même secteur (`overhang_ipi1_c5`) ;
+
+- des soldes d'opinion de l'Insee et de la Banque de France.
+Ces soldes d'opinion sont trimestrialisés en prenant la place du mois dans le trimestre\ : 
+
+  - `insee_bc_c5_m3` : climat des affaires au 3^e^ mois du trimestre (mars, juin, septembre, décembre)
+  
+  - `insee_oscd_c5_m2` : niveau des carnets de commandes au 2^e^ mois du trimestre (février, mai, septembre, novembre)
+  
+  - `insee_tppre_c5_m3` : solde d'opinion sur l'évolution future de la production au 3^e^ mois du trimestre (février, mai, septembre, novembre).
+  
+  - `bdf_tuc_c5_m2` : taux d'utilisation des capacités de production au deuxième mois du trimestre (février, mai, septembre, novembre).
+
+Les deux dernières variables sont utilisées en différence.
+
+Par simplification, nous estimerons ici le modèle entre le 1993T1 et 2019T4 : pour estimer le modèle au-delà cette date, il faudrait ajouter des indicatrices au cours de l'année 2020 et vérifier si le modèle estimé est toujours bien spécifié.
+
+
+Le modèle peut alors être estimé en utilisant par exemple la fonction `dynlm::dynlm()`^[
+L'avantage de `dynlm` par rapport à `lm` est qu'il permet de gérer directement la différenciation des variables sans avoir à créer de variable temporaire.
+] :
+
+
+```{r}
+#| warning: false
+#| label: est-mod-lm
+library(tvCoef)
+library(dynlm)
+data <- window(manufacturing, start = 1993, end = c(2019, 4))
+y <- data[, "prod_c5"]
+model_c5 <- dynlm(
+  formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 + insee_oscd_c5_m2
+  + diff(insee_tppre_c5_m3, 1) + diff(bdf_tuc_c5_m2, 1),
+  data = data
+)
+model_c5
+```
+
+Les prévisions dans l'échantillon (*in sample*) peuvent être extrait avec les fonctions `fitted()` ou `predict()` et les prévisions en temps-réel (*out of sample*) avec la fonction `tvCoef::oos_prev()`.
+
+Pour évaluer la qualité en temps-réel, nous utiliserons les résidus à partir de 2000 :
+
+```{r}
+prev_oos_lm <- oos_prev(model_c5)
+res_lm_is <- residuals(model_c5)
+res_lm_oos <- prev_oos_lm$residuals
+rmse_lm <- c(IS = rmse(res_lm_is), OOS = rmse(res_lm_oos))
+rmse_lm
+```
+
+Pour tracer les prévisions, on peut utiliser la fonction `plot()` :
+
+```{r}
+#| label: prev-lm
+plot(window(y, start = 2000))
+lines(prev_oos_lm$prevision, col = "red")
+legend("bottomleft", legend = c("y","Prev. temps réel"),
+       col= c("black", "red"), lty = 1)
+```
+
+# Régression par morceaux
+
+Pour utiliser la régression par morceaux, la première étape est d'analyser les potentielles dates de rupture.
+Pour cela nous utiliserons la fonction `tvCoef::piece_reg()` (qui s'appuie sur le package `strucchange`, voir `?strucchange::breakpoints()` pour plus d'informations).
+
+::: {.callout-note}
+## Exercice
+Utiliser la fonction `tvCoef::piece_reg()` sur le modèle précédent et regarder les résultats : y a-t-il des dates de ruptures ? 
+Peuvent-elles être interprétées ? 
+
+En utilisant notamment `oos_prev()`, comparer la qualité prédictive des modèles.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```{r}
+#| warning: false
+#| message: false
+reg_morceaux <- piece_reg(model_c5)
+# Ici une date de rupture
+# Si pas de rupture détectée, le modèle renvoyé est le modèle initial
+reg_morceaux 
+```
+L'objet précédent est une liste qui contient différentes informations, notamment :
+
+- `model` : le modèle `dynlm` estimé ;
+
+- `breakdates` : la date de rupture : 2008T3.
+
+Analysons maintenant les erreurs de prévision :
+
+```{r}
+#| warning: false
+prev_oos_rm <- oos_prev(reg_morceaux)
+res_rm_is <- residuals(reg_morceaux$model)
+res_rm_oos <- prev_oos_rm$residuals
+start(res_rm_oos) # Commence en 2000 T2
+rmse_rm <- c(IS = rmse(res_rm_is), OOS = rmse(res_rm_oos))
+rbind(rmse_lm, rmse_rm)
+```
+
+Elle sont ici réduites dans l'échantillon mais augmentent en temps réel ! 
+En regardant plus précisément, cela vient d'erreurs élevées autour de la date de rupture car l'estimation n'est pas suffisamment robuste !
+
+```{r}
+#| label: oos-lm-rm
+plot(res_rm_oos, col = "red", main = "Résidus en temps-réel")
+lines(res_lm_oos, col = "black")
+legend("topleft", legend = c("LM","Reg. par morceaux"),
+       col= c("black", "red"), lty = 1)
+```
+
+En analysant les prévisions à partir de 2010, les erreurs sont bien réduites :
+
+```{r}
+apply(window(ts.union(res_lm_oos, res_rm_oos), start = 2010), 2, rmse)
+```
+
+:::
+
+::: {.callout-note}
+## Exercice
+
+Le modèle précédent suppose une rupture sur toutes les variables : est-ce réaliste dans ce cas ? 
+Appliquer la fonction `tvCoef::hansen.test()` sur votre modèle et interpréter les résultats.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+```{r}
+hansen.test(model_c5)
+```
+Le test de Hansen conclut que seul l'acquis d'IPI évolue.
+Attention à l'interprétation du test sur la constante : si cette variable évolue il est possible que la constante aussi.
+
+On peut également faire des tests de Fisher sur le modèle précédent pour tester si les coefficients sont égaux entre les sous-périodes.
+Cela peut être fait avec la fonction `car::linearHypothesis()` :
+
+```{r}
+# on rejette H0 => non constance des coefficients
+car::linearHypothesis(reg_morceaux$model, "`(Intercept)_2008.5` = `(Intercept)_2019.75`")
+# on rejette H0 => non constance des coefficients
+car::linearHypothesis(reg_morceaux$model, "overhang_ipi1_c5_2019.75 = overhang_ipi1_c5_2008.5")
+# on ne rejette pas H0 => constance des coefficients
+car::linearHypothesis(reg_morceaux$model, "`diff(insee_tppre_c5_m3, 1)_2019.75` = `diff(insee_tppre_c5_m3, 1)_2008.5`")
+```
+:::
+
+::: {.callout-note}
+## Exercice
+
+En exploitant les résultats de l'exercice précédent, simplifier le modèle de régression par morceaux.
+
+On pourra pour cela utiliser le paramètre `fixed_var` de `piece_reg()` pour fixer certaines variables (i.e. : ne pas découper les régresseurs).
+
+Comparer les prévisions avec les modèles précédents.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Ici nous allons fixer toutes les variables sauf les deux premières (constante + acquis d'IPI -- *overhang*)
+
+```{r}
+#| warning: false
+#| message: false
+
+reg_morceaux2 <- piece_reg(model_c5, fixed_var = c(3, 4, 5, 6))
+
+# Rmq : la date de rupture est détectée sur le modèle complet et non
+#  sur le sous-modèle avec des variables fixes
+reg_morceaux2 
+prev_oos_rm2 <- oos_prev(reg_morceaux2)
+res_rm2_is <- residuals(reg_morceaux2$model)
+res_rm2_oos <- prev_oos_rm2$residuals
+rmse_rm2 <- c(IS = rmse(res_rm2_is), OOS = rmse(res_rm2_oos))
+rbind(rmse_lm, rmse_rm, rmse_rm2)
+
+# Après 2010
+apply(window(ts.union(res_lm_oos, res_rm_oos, res_rm2_oos), start = 2010), 2, rmse)
+```
+Cela permet d'améliorer la qualité de la prévision en temps-réel mais pas celle dans l'échantillon.
+
+:::
+
+# Régression locale
+
+Pour rappel, la régression locale revient, pour chaque date $t$ à estimer $\beta_t$
+
+$$
+\DeclareMathOperator{\argmin}{argmin}
+\hat \beta = \underset{\theta_0}{\argmin}\sum_{j=1}^T\left(y_{j}-x_j\theta_0\right)^2K_b\left(\frac{j-t}{T}\right)
+$$
+
+Dans le package ici utilisé (`tvReg`), le noyau utilisé par défaut est le noyau tricube :
+
+$$
+K(x)=\frac{35}{32}\left(
+  1-
+  \left\lvert
+  x
+  \right\lvert^2
+\right)^3 \mathbb 1_{|x| \leq 1}
+\text{ et }
+K_b(x)=\frac 1 b K(x/b)
+$$
+
+Pour estimer le modèle, nous utilisons la fonction `tvReg::tvLM` dont le premier paramètre est une formule.
+Mais contrairement à `dynlm`, `tvLM` ne gère pas directement les variables en différence :
+
+
+```{r}
+#| error: true
+#| warning: false
+library(tvReg)
+tvReg::tvLM(formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 + insee_oscd_c5_m2
+  + diff(insee_tppre_c5_m3, 1) + diff(bdf_tuc_c5_m2, 1),
+  data = data)
+```
+
+Pour éviter les problèmes liées au variables en différence, nous récupérons les données transformées de `dynlm` en utilisant la fonction `tvCoef::get_data(model_c5)`, ce qui permet également de simplifier la formule en `prod_c5 ~ .`(puisque la base de données alors utilisée ne contient que les exogènes utiles).
+
+::: {.callout-note}
+## Exercice
+
+Estimer le modèle en utilisant les indications précédentes.
+
+Quelle fenêtre est utilisée (paramètre $b$) ? 
+Est-ce que les résultats sont différents de ceux de la régression linéaire ? 
+Tracer les coefficients obtenus à chaque date (fonction `coef()` pour les extraire, il faudrait reconvertir le résultat en objet `ts()`)
+
+Comparer les erreurs de prévision dans l'échantillon avec ceux des modèles précédents.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+La fenêtre retenue est de 0,31 : les résultats seront donc différents de ceux de la régression linéaire.
+
+```{r}
+#| fig-height: 8
+#| label: coef-tvlm
+tvlm <- tvReg::tvLM(formula = prod_c5 ~ .,
+                 data = get_data(model_c5))
+coefs_tvlm <- ts(coef(tvlm), end = end(data), frequency = frequency(data))
+plot(coefs_tvlm)
+```
+Ici toutes les coefficients sont variables alors que certains pourraient être fixes comme vu dans la partie précédente.
+Pour fixer certaines variables, on pourrait faire une régression en deux étapes.
+
+```{r}
+res_tvlm_is <- residuals(tvlm)
+rmse_tvlm <- c(IS = rmse(res_tvlm_is), OOS = NA)
+rbind(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm)
+```
+
+Le RMSE dans l'échantillon est réduit.
+:::
+
+::: {.callout-note}
+## Exercice
+
+L'objectif de cet exercice est de calculer les prévisions hors échantillon.
+
+Appliquer la fonction `tvCoef::oos_prev()` au modèle précédent avec les paramètres `end = end(data), frequency = frequency(data)` (utiles pour garder la structure temporelle des données) : quels sont les paramètres réestimés ?
+
+Appliquer maintenant la même fonction avec le paramètre `fixed_bw = TRUE`.
+À quoi cela correspond ?
+Comparer les erreurs de prévisions obtenus.
+:::
+
+:::: {.callout-tip collapse="true"}
+## Solution
+
+Dans les modèles de régression locales, il y a deux sources de révisions en temps-réel :
+
+1. Actualisation des coefficients du fait de l'ajout de nouveaux points (noyau asymétrique utilisé pour les premières estimations)
+
+2. Actualisation de la fenêtre.
+
+
+::: {.callout-tip icon=false}
+## Actualisation de la fenêtre et des coefficients
+
+Par défaut, avec `oos_prev()` tous les paramètres sont réestimés.
+C'est en particulier le cas de la fenêtre qui est réestimée à chaque date, à chaque observation :
+
+```{r}
+#| label: bw-tvlm-soos
+prev_oos_tvlm_all <- oos_prev(tvlm, end = end(data), frequency = frequency(data))
+all_bw <- ts(sapply(prev_oos_tvlm_all$model, `[[`, "bw"),
+             end = end(prev_oos_tvlm_all$prevision),
+             frequency = frequency(data))
+plot(all_bw)
+res_tvlm_all_oos <- prev_oos_tvlm_all$residuals
+rmse_tvlm["OOS"] <- rmse(res_tvlm_all_oos)
+rbind(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm)
+# Après 2010
+apply(window(ts.union(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_all_oos), start = 2010), 2, rmse)
+```
+::: 
+
+::: {.callout-tip icon=false}
+## Actualisation des coefficients uniquement
+
+Fixons maintenant la fenêtre à la dernière valeur estimée :
+
+```{r}
+prev_oos_tvlm_lastbw <- oos_prev(tvlm, end = end(data), frequency = frequency(data),fixed_bw = TRUE)
+res_tvlm_lastbw_oos <- prev_oos_tvlm_lastbw$residuals
+rmse_tvlm["OOS"] <- rmse(res_tvlm_lastbw_oos)
+rbind(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm)
+# Après 2010
+apply(window(ts.union(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_all_oos, res_tvlm_lastbw_oos), start = 2010), 2, rmse)
+```
+
+Le RMSE en temps-réel est réduit par rapport à précédemment mais il reste plus élevé qu'avec la régression linéaire.
+:::
+::::
+
+::: {.callout-remarque}
+## Remarque
+
+Pour fixer certaines variables, on pourrait faire une régression en deux étapes.
+La fonction `rmse_prev()` permet de calculer les prévisions dans l'échantillon et hors échantillon sur le modèle de régression linéaire, la régression par morceaux, la régression locale en fixant ou non certains coefficients.
+
+```{r}
+#| warning: false
+comp_prev <- rmse_prev(model_c5, fixed_var = c(3, 4, 5, 6), fixed_bw = TRUE)
+comp_prev
+```
+Sept modèles différents sont estimés, dans l'ordre :
+
+1. Modèle de régression linéaire.
+
+2. Régression linéaire par morceaux où toutes les variables divisées en fonction de la date de rupture.
+
+3. Régression linéaire par morceaux où toutes les variables, sauf celles spécifiées par `fixed_var`, sont  divisées en fonction de la date de rupture.
+
+4. Régression locale.
+
+5. Régression locale avec toutes les variables divisées en fonction de la date de rupture.
+
+6. Régression locale où toutes les variables, sauf celles spécifiées par `fixed_var`, sont  divisées en fonction de la date de rupture.
+
+7. Régression locale où les variables celles spécifiées par `fixed_var` sont estimées par une régression linéaire (coefficients fixes sur l'ensemble de la période).
+
+
+On peut ensuite récupérer tous les résidus en temps réel :
+```{r}
+comp_prev_tr <- do.call(cbind, lapply(comp_prev$prevision, `[[`, "residuals"))
+apply(window(comp_prev_tr, start = 2010), 2, rmse)
+```
+:::
+
+# Modèles espace-état
+
+Dans cette dernière partie nous estimons un modèle espace-état avec coefficients qui varient dans le temps.
+
+Pour rappel, puisque nous avons 6 variables exogènes, le modèle s'écrit :
+
+$$
+\begin{cases}
+y_t=X_t\alpha_t+\varepsilon_t,\quad&\varepsilon_t\sim\mathcal N(0,\sigma^2)\\
+\alpha_{t+1}=\alpha_t+\eta_t,\quad&\eta_t\sim\mathcal N(0,\sigma^2 Q)
+\end{cases},\text{ avec }\eta_t\text{ et }\varepsilon_t\text{ indépendants et }
+Q = \begin{pmatrix}q_1 &  &0 \\ & \ddots \\ 0 & & q_6 \end{pmatrix}
+$$
+
+La matrice $Q$ peut-être imposée par l'utilisateur (par exemple variance nulle si l'on veut fixer tous les coefficients) ou estimée.
+
+Il y a également deux opérations classiques : 
+
+- *smoothing* : estimation de $\hat\alpha_t=E[\alpha_t|y]$ et $V_t=V[\alpha_t-\hat\alpha_t]=V[\alpha_t|y]$ : coefficients et variances estimés en utilisant l'ensemble des données disponibles ;
+
+- *filtering* : estimation de $a_{t+1}=E[\alpha_{t+1}|Y_t]$ et $P_{t+1}=V[\alpha_{t+1}|Y_t]$ : coefficients et variances estimés de manière dynamique en utilisant l'information disponible jusqu'à la date précédente (estimation en temps-réel).
+
+Pour estimer ces modèles nous utiliserons la fonction `tvCoef::ssm_lm()` dont le premier paramètre est un modèle de régression linéaire (le modèle `model_c5`).
+
+::: {.callout-note}
+## Exercice
+
+Par défaut, `tvCoef::ssm_lm()` estime le modèle en forçant $q_1=q_2=\dots=q_6=0$.
+Quel modèle retrouve-t-on ?
+Regarder les résultats de cette fonction et interpréter les quantités de `"smoothed_states"`, `"filtering_states"`,`"smoothed_stdev"` (sauf dernière colonne). 
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Le modèle estimé est le modèle de régression linéaire !
+
+La composante `smoothed_states` contient les coefficients du modèle de régression linéaire estimé en utilisant toutes les données.
+La dernière colonne (`"noise"`) contient les résidus.
+La composante `smoothed_stdev` contient les écart-types associés aux différents coefficients, la dernière colonne s'interprète de manière plus complexe et ne sera pas détaillée ici.
+
+```{r}
+mod_ssm <- ssm_lm(model_c5)
+summary(model_c5)
+tail(mod_ssm$smoothed_states, 3)
+tail(mod_ssm$smoothed_stdev, 3)
+```
+La composante `filtering_states` donne les estimations des coefficients en temps réel : la valeur à la date $t$ correspond aux estimations des coefficients en utilisant les données jusqu'en $t-1$.
+Ainsi, en estimant le modèle jusqu'en 2010T1, les coefficients obtenus sont ceux de la composante `filtering_states` de 2010T2\ :
+
+```{r}
+summary(dynlm(
+  formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 + insee_oscd_c5_m2
+  + diff(insee_tppre_c5_m3, 1) + diff(bdf_tuc_c5_m2, 1),
+  data = window(data, end = 2010)
+))
+window(mod_ssm$filtering_states, start = 2010, end = c(2010,2))
+```
+:::
+
+::: {.callout-note}
+## Exercice
+
+Estimer maintenant le modèle en utilisant les paramètres suivant :
+```{r}
+model_ssm <- ssm_lm(model_c5,
+       var_intercept = 0.01, fixed_var_intercept = FALSE,
+       var_variables = 0.01, fixed_var_variables = FALSE)
+```
+
+Les paramètres `fixed_var_intercept = FALSE` et `fixed_var_variables = FALSE` permettent d'indiquer que les variances $q_1,\dots, q_6$ seront estimées.
+Les paramètres `var_intercept` et `var_variables` n'auront généralement aucun impact sur les résultats (puisque dans notre cas les variances sont estimées), ils interviennent toutefois dans le processus algorithmique : les modifier permet dans certains cas d'éviter des erreurs d'optimisation.
+
+Regarder les coefficients `model_ssm$smoothed_states` : quelles sont les variables qui varient dans le temps ?
+À partir de `model_ssm$fitted`, comparer la qualité prédictive de ce modèle avec les précédents.
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Les variables fixes sont la constante et les carnets de commandes globaux :
+
+```{r}
+#| fig-height: 8
+#| label: coef-ssm
+plot(model_ssm$smoothed_states[,-ncol(model_ssm$smoothed_states)])
+```
+On peut également vérifier en regardant les variances $\sigma^2q_i$ :
+
+```{r}
+model_ssm$parameters$parameters * model_ssm$parameters$scaling
+```
+
+
+```{r}
+res_ssm_is <- y - model_ssm$fitted[,"smoothed"]
+res_ssm_oos <- y - model_ssm$fitted[,"filtering"]
+rmse_ssm <- c(IS = rmse(res_ssm_is), OOS = rmse(res_ssm_oos))
+rbind(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm, rmse_ssm)
+# Après 2010
+apply(window(ts.union(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_lastbw_oos, res_ssm_oos), start = 2010), 2, rmse)
+```
+
+En réalité, la composante *filtering* ne correspond pas exactement à de l'estimation en temps-réel car certains paramètres ne sont pas estimés de manière dynamique.
+Pour avoir une vraie estimation en temps-réel, il faudrait réestimer le modèle à chaque date : on peut pour cela utiliser la fonction `ssm_lm_oos()`.
+Pour que cette fonction marche, il faut parfois jouer sur les paramètres `var_intercept` et `var_variables`.
+
+```{r}
+model_ssm_oos <- ssm_lm_oos(model_c5,
+       var_intercept = 0.01, fixed_var_intercept = FALSE,
+       var_variables = 0.01, fixed_var_variables = FALSE)
+res_ssm_oos <- y - model_ssm_oos$prevision
+
+rmse_ssm <- c(IS = rmse(res_ssm_is), OOS = rmse(res_ssm_oos))
+rbind(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm, rmse_ssm)
+apply(window(ts.union(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_lastbw_oos, res_ssm_oos), start = 2010), 2, rmse)
+```
+
+On peut enfin faire un graphique avec toutes les prévisions, en utilisant par exemple le package `dygraphs` :
+
+```{r}
+#| warning: false
+library(dygraphs)
+prevs <- ts.intersect(y, y - res_lm_oos, y - res_rm2_oos, y - res_tvlm_lastbw_oos, y - res_ssm_oos)
+colnames(prevs) <- c("y", "lm", "Reg par morceaux", "Reg locale", "SSM")
+dygraph(prevs) %>% 
+  dyRangeSelector(dateWindow = c("2010-01-01", "2019-12-01")) %>%
+  dyOptions(colors = c("black", "red", "green", "blue", "purple"))
+```
+
+:::
+
+
+::: {.callout-note}
+## Exercice facultatif
+
+L'objectif de cet exercice est d'estimer un nouveau modèle jusqu'en 2022T4 pour faire une prévision jusqu'en 2023T1 :
+
+1. Créer des indicatrices sur les 4 premiers trimestres de l'année 2020.
+
+2. Estimer un nouveau modèle `dynlm` en ajoutant ces indicatrices.
+
+3. Estimer un nouveau modèle espace-état.
+
+4. Utiliser les variables exogènes du modèles jusqu'en 2023T1 (on peut pour cela appliquer la fonction `tvCoef::full_exogeneous_matrix()` sur le modèle `dynlm`) et la dernière ligne de la composante `"smoothed_states"` pour effectuer des prévisions sur 2023T1.
+
+:::: {.callout-important}
+## Attention
+
+Au moment de la rédaction du TP, toutes les données du 2023T1 ne sont pas disponibles, la prévision ne peut donc pas être faite jusqu'à cette date.
+Toutefois, cet exercice vous permet de voir comment procéder lorsque ces données seront disponibles.
+Ce TP sera mis à jour le 28 mars avec les nouvelles données.
+:::
+::::
+
+::: {.callout-caution collapse="true"}
+## Indice (création des indicatrices)
+
+On pourra utiliser le programme suivant pour créer les indicatrices :
+
+```{r}
+#| eval: false
+ind <- cbind(time(manufacturing) == 2020, time(manufacturing) == 2020.25, time(manufacturing) == 2020.5,
+time(manufacturing) == 2020.75)
+ind <- ts(apply(ind,2, as.numeric), start = start(manufacturing), frequency = 4)
+colnames(ind) <- sprintf("ind2020Q%i", 1:4)
+data <- ts.union(manufacturing, ind)
+colnames(data) <- c(colnames(manufacturing), colnames(ind))
+```
+
+:::
+
+::: {.callout-tip collapse="true"}
+## Solution
+
+Estimation du modèle de régression linéaire :
+```{r}
+#| warning: false
+ind <- cbind(time(manufacturing) == 2020, time(manufacturing) == 2020.25, time(manufacturing) == 2020.5,
+time(manufacturing) == 2020.75)
+ind <- ts(apply(ind,2, as.numeric), start = start(manufacturing), frequency = 4)
+colnames(ind) <- sprintf("ind2020Q%i", 1:4)
+data <- ts.union(manufacturing, ind)
+colnames(data) <- c(colnames(manufacturing), colnames(ind))
+model_c5_complet <- dynlm(
+  formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 + insee_oscd_c5_m2
+  + diff(insee_tppre_c5_m3, 1) + diff(bdf_tuc_c5_m2, 1) 
+  + ind2020Q1 + ind2020Q2 + ind2020Q3 + ind2020Q4,
+  data = data
+)
+summary(model_c5_complet)
+prev_oos_lm_complet <- oos_prev(model_c5_complet)
+```
+
+Estimation du modèle espace-état :
+```{r}
+
+model_ssm_complet <- ssm_lm(model_c5_complet,
+       var_intercept = 0.01, fixed_var_intercept = FALSE,
+       var_variables = 0.01, fixed_var_variables = FALSE)
+# # Rmq : on pourrait également fixer à 0 les variances des coefficients associés aux indicatrices :
+# model_ssm_complet <- ssm_lm(model_c5_complet,
+#         var_intercept = 0.01, fixed_var_intercept = FALSE,
+#         var_variables = c(rep(0.01,5), rep(0, 4)), 
+#         fixed_var_variables = c(rep(FALSE,5), rep(TRUE, 4)))
+
+model_ssm_complet_oos <- ssm_lm_oos(model_c5_complet, date = 18*4,
+       var_intercept = 0.01, fixed_var_intercept = FALSE,
+       var_variables = 0.01, fixed_var_variables = FALSE)
+```
+
+Comme vous allez le voir, les soldes d'opinion de l'Insee de mars ne sont pas encore disponibles au moment de l'écriture du TP : la prévisions de 2023T1 ne peut donc pas être calculé.
+Toutefois, ce code reste valide si vous utilisez un autre modèle où les données sont disponibles.
+Par ailleurs, ce TP sera mis à jour au moment de la publication de ces soldes d'opinion.
+
+```{r}
+#| label: graph-final
+X_variables = full_exogeneous_matrix(model_c5_complet)
+# Comme vous voyez ici, les soldes d'opinion de l'Insee de mars ne sont pas encore disponibles au moment de l'écrit
+window(X_variables, start = 2022)
+prevs_lm <- rowSums(X_variables %*% diag(coef(model_c5_complet)))
+prevs_lm <- prevs_lm[length(prevs_lm)]
+prevs_ssm <- rowSums(X_variables %*% diag(model_ssm_complet$smoothed_states[nrow(model_ssm_complet$smoothed_states), - ncol(model_ssm_complet$smoothed_states)]))
+prevs_ssm <- prevs_ssm[length(prevs_ssm)]
+full_prevs <- ts.union(prev_oos_lm_complet$prevision,
+                       model_ssm_complet_oos$prevision)
+full_prevs <- ts(rbind(full_prevs,
+                       c(prevs_lm, prevs_ssm)),
+                 start = start(full_prevs),
+                 frequency = frequency(full_prevs))
+data_forecasts <- ts.union(manufacturing[,"prod_c5"], full_prevs)
+data_forecasts <- window(data_forecasts, start = 2010)
+colnames(data_forecasts) <- c("y", "lm", "SSM")
+dygraph(data_forecasts) %>% 
+  dyRangeSelector(dateWindow = c("2018-01-01", "2023-03-01"))
+```
+
+:::
+
+
+
+
+
