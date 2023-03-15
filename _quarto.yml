@@ -14,20 +14,6 @@ website:
   page-footer:
     left: "Copyright 2023, Claire de Rosamel, Alain Quartier-la-Tente, Insee"
 
-format:
-  html:
-    theme: Litera
-    toc: true
-
-lang: fr
-language:
- title-block-author-plural: Auteurs
- title-block-published: Date
-
-execute:
-  freeze: auto
-
-
 # giscus
 comments:
   giscus:
@@ -44,3 +30,19 @@ comments:
     input-position: "bottom"
     theme: "light"
     #crossorigin: "anonymous"
+
+format:
+  html:
+    theme: Litera
+    toc: true
+
+lang: fr
+language:
+ title-block-author-plural: Auteurs
+ title-block-published: Date
+
+execute:
+  freeze: auto
+
+
+
