@@ -5,11 +5,11 @@ website:
   title: "Atelier tvCoef"
   navbar:
     left:
-      - href: index.qmd
+      - href: slides.qmd
         text: Slides
       - href: manuel_installation.qmd
         text: Manuel d'installation
-      - href: index.qmd
+      - href: TP.qmd
         text: TP
   page-footer:
     left: "Copyright 2023, Claire de Rosamel, Alain Quartier-la-Tente, Insee"
