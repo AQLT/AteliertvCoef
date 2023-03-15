@@ -1,0 +1,11 @@
+
+div.callout.callout-remarque.callout {
+  border-left-color: purple;
+}
+div.callout-remarque.callout.callout-style-default {
+  border-left-color: purple;
+}
+div.callout-remarque.callout-style-default > .callout-header {
+  background-color: plum;
+  //border-left-color: purple;
+}
