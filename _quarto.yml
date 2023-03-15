@@ -14,23 +14,6 @@ website:
   page-footer:
     left: "Copyright 2023, Claire de Rosamel, Alain Quartier-la-Tente, Insee"
 
-# giscus
-# comments:
-#   giscus:
-#     repo: AQLT/AteliertvCoef
-#     repo-id: "R_kgDOJHHw_w"
-#     category: "Announcements"
-#     category-id: "DIC_kwDOIepag84CSt5_"
-#     mapping: "pathname"
-#     language: fr
-#     #strict: false
-#     reactions-enabled: true
-#     loading: lazy
-#     #emit-metada: false
-#     input-position: "bottom"
-#     theme: "light"
-#     #crossorigin: "anonymous"
-
 format:
   html:
     theme: Litera
@@ -45,4 +28,19 @@ execute:
   freeze: auto
 
 
-
+# giscus
+comments:
+  giscus:
+    repo: AQLT/AteliertvCoef
+    repo-id: "R_kgDOJHHw_w"
+    category: "Announcements"
+    category-id: "DIC_kwDOIepag84CSt5_"
+    mapping: "pathname"
+    language: fr
+    #strict: false
+    reactions-enabled: true
+    loading: lazy
+    #emit-metada: false
+    input-position: "bottom"
+    theme: "light"
+    #crossorigin: "anonymous"
