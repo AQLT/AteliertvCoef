@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.220">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Claire du Campe de Rosamel">
+<meta name="author" content="Alain Quartier-la-Tente">
+
+<title>Atelier tvCoef - Utilisation de modèles de régression à coefficients variant dans le temps pour la prévision conjoncturelle</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "Pas de résultats",
+    "search-matching-documents-text": "documents trouvés",
+    "search-copy-link-title": "Copier le lien vers la recherche",
+    "search-hide-matches-text": "Cacher les correspondances additionnelles",
+    "search-more-match-text": "correspondance de plus dans ce document",
+    "search-more-matches-text": "correspondances de plus dans ce document",
+    "search-clear-button-title": "Effacer",
+    "search-detached-cancel-button-title": "Annuler",
+    "search-submit-button-title": "Envoyer"
+  }
+}</script>
+<script src="site_libs/htmlwidgets-1.6.0/htmlwidgets.js"></script>
+<script src="site_libs/jquery-1.11.1/jquery.min.js"></script>
+<link href="site_libs/dygraphs-1.1.1/dygraph.css" rel="stylesheet">
+<script src="site_libs/dygraphs-1.1.1/dygraph-combined.js"></script>
+<script src="site_libs/dygraphs-1.1.1/shapes.js"></script>
+<script src="site_libs/moment-2.8.4/moment.js"></script>
+<script src="site_libs/moment-timezone-0.2.5/moment-timezone-with-data.js"></script>
+<script src="site_libs/moment-fquarter-1.0.0/moment-fquarter.min.js"></script>
+<script src="site_libs/dygraphs-binding-1.1.1.6/dygraphs.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="css/callout.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Atelier tvCoef</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./slides.html" rel="" target="">
+ <span class="menu-text">Slides</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./manuel_installation.html" rel="" target="">
+ <span class="menu-text">Manuel d’installation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./TP.html" rel="" target="" aria-current="page">
+ <span class="menu-text">TP</span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools ms-auto">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Sur cette page</h2>
+   
+  <ul>
+  <li><a href="#régression-par-morceaux" id="toc-régression-par-morceaux" class="nav-link active" data-scroll-target="#régression-par-morceaux"><span class="toc-section-number">1</span>  Régression par morceaux</a></li>
+  <li><a href="#régression-locale" id="toc-régression-locale" class="nav-link" data-scroll-target="#régression-locale"><span class="toc-section-number">2</span>  Régression locale</a>
+  <ul class="collapse">
+  <li><a href="#remarque" id="toc-remarque" class="nav-link" data-scroll-target="#remarque"><span class="toc-section-number">2.1</span>  Remarque</a></li>
+  </ul></li>
+  <li><a href="#modèles-espace-état" id="toc-modèles-espace-état" class="nav-link" data-scroll-target="#modèles-espace-état"><span class="toc-section-number">3</span>  Modèles espace-état</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Utilisation de modèles de régression à coefficients variant dans le temps pour la prévision conjoncturelle</h1>
+<p class="subtitle lead">Atelier D2E</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Auteurs</div>
+    <div class="quarto-title-meta-contents">
+             <p>Claire du Campe de Rosamel </p>
+             <p>Alain Quartier-la-Tente </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Date</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">16 mars 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<blockquote class="blockquote">
+<p>L’objectif de ce TP est d’apprendre à utiliser quelques fonctionnalités du package <code>tvCoef</code> pour l’estimation de modèles de régression à coefficients variant dans le temps.</p>
+</blockquote>
+<p>Les packages suivants seront utilisés :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>packages_to_install <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"dygraphs"</span>, <span class="st">"car"</span>, <span class="st">"dynlm"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">installed.packages</span>()[,<span class="st">"Package"</span>][<span class="sc">!</span> packages_to_install <span class="sc">%in%</span> <span class="fu">installed.packages</span>()[,<span class="st">"Package"</span>]]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(packages) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">install.packages</span>(packages)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="st">"tvCoef"</span> <span class="sc">%in%</span> <span class="fu">installed.packages</span>()[,<span class="st">"Package"</span>]) {</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"palatej/rjd3toolkit"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"palatej/rjd3sts"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"AQLT/tvCoef"</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Pour l’installation de tvCoef, voir le <a href="./manuel_installation.html">manuel d’installation</a>.</p>
+<p>Pour ce TP nous utiliserons les données de la base <code>tvCoef::manufacturing</code>pour prévoir l’évolution trimestrielle de la production du secteur des autres industries manufacturières (C5, <code>prod_c5</code>) à partir de :</p>
+<ul>
+<li><p>l’acquis de croissance au premier mois du trimestre de l’indice de production industrielle du même secteur (<code>overhang_ipi1_c5</code>) ;</p></li>
+<li><p>des soldes d’opinion de l’Insee et de la Banque de France. Ces soldes d’opinion sont trimestrialisés en prenant la place du mois dans le trimestre&nbsp;:</p>
+<ul>
+<li><p><code>insee_bc_c5_m3</code> : climat des affaires au 3<sup>e</sup> mois du trimestre (mars, juin, septembre, décembre)</p></li>
+<li><p><code>insee_oscd_c5_m2</code> : niveau des carnets de commandes au 2<sup>e</sup> mois du trimestre (février, mai, septembre, novembre)</p></li>
+<li><p><code>insee_tppre_c5_m3</code> : solde d’opinion sur l’évolution future de la production au 3<sup>e</sup> mois du trimestre (février, mai, septembre, novembre).</p></li>
+<li><p><code>bdf_tuc_c5_m2</code> : taux d’utilisation des capacités de production au deuxième mois du trimestre (février, mai, septembre, novembre).</p></li>
+</ul></li>
+</ul>
+<p>Les deux dernières variables sont utilisées en différence.</p>
+<p>Par simplification, nous estimerons ici le modèle entre le 1993T1 et 2019T4 : pour estimer le modèle au-delà cette date, il faudrait ajouter des indicatrices au cours de l’année 2020 et vérifier si le modèle estimé est toujours bien spécifié.</p>
+<p>Le modèle peut alors être estimé en utilisant par exemple la fonction <code>dynlm::dynlm()</code><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tvCoef)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dynlm)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">window</span>(manufacturing, <span class="at">start =</span> <span class="dv">1993</span>, <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2019</span>, <span class="dv">4</span>))</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> data[, <span class="st">"prod_c5"</span>]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>model_c5 <span class="ot">&lt;-</span> <span class="fu">dynlm</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> prod_c5 <span class="sc">~</span> overhang_ipi1_c5 <span class="sc">+</span> insee_bc_c5_m3 <span class="sc">+</span> insee_oscd_c5_m2</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="sc">+</span> <span class="fu">diff</span>(insee_tppre_c5_m3, <span class="dv">1</span>) <span class="sc">+</span> <span class="fu">diff</span>(bdf_tuc_c5_m2, <span class="dv">1</span>),</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>model_c5</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Time series regression with "ts" data:
+Start = 1993(2), End = 2019(4)
+
+Call:
+dynlm(formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 + 
+    insee_oscd_c5_m2 + diff(insee_tppre_c5_m3, 1) + diff(bdf_tuc_c5_m2, 
+    1), data = data)
+
+Coefficients:
+               (Intercept)            overhang_ipi1_c5  
+                 -15.94185                     0.12222  
+            insee_bc_c5_m3            insee_oscd_c5_m2  
+                   0.14891                    -0.04347  
+diff(insee_tppre_c5_m3, 1)      diff(bdf_tuc_c5_m2, 1)  
+                   0.03711                     0.01846  </code></pre>
+</div>
+</div>
+<p>Les prévisions dans l’échantillon (<em>in sample</em>) peuvent être extrait avec les fonctions <code>fitted()</code> ou <code>predict()</code> et les prévisions en temps-réel (<em>out of sample</em>) avec la fonction <code>tvCoef::oos_prev()</code>.</p>
+<p>Pour évaluer la qualité en temps-réel, nous utiliserons les résidus à partir de 2000 :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>prev_oos_lm <span class="ot">&lt;-</span> <span class="fu">oos_prev</span>(model_c5)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>res_lm_is <span class="ot">&lt;-</span> <span class="fu">residuals</span>(model_c5)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>res_lm_oos <span class="ot">&lt;-</span> prev_oos_lm<span class="sc">$</span>residuals</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>rmse_lm <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">IS =</span> <span class="fu">rmse</span>(res_lm_is), <span class="at">OOS =</span> <span class="fu">rmse</span>(res_lm_oos))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>rmse_lm</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       IS       OOS 
+0.7656267 0.9298085 </code></pre>
+</div>
+</div>
+<p>Pour tracer les prévisions, on peut utiliser la fonction <code>plot()</code> :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">window</span>(y, <span class="at">start =</span> <span class="dv">2000</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(prev_oos_lm<span class="sc">$</span>prevision, <span class="at">col =</span> <span class="st">"red"</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"bottomleft"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"y"</span>,<span class="st">"Prev. temps réel"</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">col=</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"red"</span>), <span class="at">lty =</span> <span class="dv">1</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="TP_files/figure-html/prev-lm-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<section id="régression-par-morceaux" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Régression par morceaux</h1>
+<p>Pour utiliser la régression par morceaux, la première étape est d’analyser les potentielles dates de rupture. Pour cela nous utiliserons la fonction <code>tvCoef::piece_reg()</code> (qui s’appuie sur le package <code>strucchange</code>, voir <code>?strucchange::breakpoints()</code> pour plus d’informations).</p>
+<div class="callout callout-style-default callout-note callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Exercice
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Utiliser la fonction <code>tvCoef::piece_reg()</code> sur le modèle précédent et regarder les résultats : y a-t-il des dates de ruptures ? Peuvent-elles être interprétées ?</p>
+<p>En utilisant notamment <code>oos_prev()</code>, comparer la qualité prédictive des modèles.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>reg_morceaux <span class="ot">&lt;-</span> <span class="fu">piece_reg</span>(model_c5)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Ici une date de rupture</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Si pas de rupture détectée, le modèle renvoyé est le modèle initial</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>reg_morceaux </span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$model
+
+Time series regression with "ts" data:
+Start = 1993(2), End = 2019(4)
+
+Call:
+dynlm::dynlm(formula = as.formula(formula), data = data2)
+
+Coefficients:
+                `(Intercept)_2008.5`               overhang_ipi1_c5_2008.5  
+                           -7.772228                              0.120109  
+               insee_bc_c5_m3_2008.5               insee_oscd_c5_m2_2008.5  
+                            0.073437                             -0.005285  
+ `diff(insee_tppre_c5_m3, 1)_2008.5`       `diff(bdf_tuc_c5_m2, 1)_2008.5`  
+                            0.027550                              0.016886  
+               `(Intercept)_2019.75`              overhang_ipi1_c5_2019.75  
+                          -18.131296                              0.480903  
+              insee_bc_c5_m3_2019.75              insee_oscd_c5_m2_2019.75  
+                            0.169182                             -0.052009  
+`diff(insee_tppre_c5_m3, 1)_2019.75`      `diff(bdf_tuc_c5_m2, 1)_2019.75`  
+                            0.054804                              0.021315  
+
+
+$start
+[1] 1993    2
+
+$end
+[1] 2019    4
+
+$frequency
+[1] 4
+
+$breakdates
+[1] 2008.5
+
+$tvlm
+[1] FALSE
+
+attr(,"class")
+[1] "piecereg"</code></pre>
+</div>
+</div>
+<p>L’objet précédent est une liste qui contient différentes informations, notamment :</p>
+<ul>
+<li><p><code>model</code> : le modèle <code>dynlm</code> estimé ;</p></li>
+<li><p><code>breakdates</code> : la date de rupture : 2008T3.</p></li>
+</ul>
+<p>Analysons maintenant les erreurs de prévision :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>prev_oos_rm <span class="ot">&lt;-</span> <span class="fu">oos_prev</span>(reg_morceaux)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>res_rm_is <span class="ot">&lt;-</span> <span class="fu">residuals</span>(reg_morceaux<span class="sc">$</span>model)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>res_rm_oos <span class="ot">&lt;-</span> prev_oos_rm<span class="sc">$</span>residuals</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">start</span>(res_rm_oos) <span class="co"># Commence en 2000 T2</span></span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2000    2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>rmse_rm <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">IS =</span> <span class="fu">rmse</span>(res_rm_is), <span class="at">OOS =</span> <span class="fu">rmse</span>(res_rm_oos))</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               IS       OOS
+rmse_lm 0.7656267 0.9298085
+rmse_rm 0.6008502 1.5042050</code></pre>
+</div>
+</div>
+<p>Elle sont ici réduites dans l’échantillon mais augmentent en temps réel ! En regardant plus précisément, cela vient d’erreurs élevées autour de la date de rupture car l’estimation n’est pas suffisamment robuste !</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(res_rm_oos, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">main =</span> <span class="st">"Résidus en temps-réel"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(res_lm_oos, <span class="at">col =</span> <span class="st">"black"</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topleft"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"LM"</span>,<span class="st">"Reg. par morceaux"</span>),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">col=</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"red"</span>), <span class="at">lty =</span> <span class="dv">1</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="TP_files/figure-html/oos-lm-rm-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>En analysant les prévisions à partir de 2010, les erreurs sont bien réduites :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>res_lm_oos res_rm_oos 
+ 0.7431644  0.9633194 </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Exercice
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Le modèle précédent suppose une rupture sur toutes les variables : est-ce réaliste dans ce cas ? Appliquer la fonction <code>tvCoef::hansen.test()</code> sur votre modèle et interpréter les résultats.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hansen.test</span>(model_c5)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Variable                  L        Stat     Conclusion 
+______________________________________________________________ 
+(Intercept)                  0.28297   0.47   FALSE   
+overhang_ipi1_c5             1.00779   0.47    TRUE   
+insee_bc_c5_m3               0.33875   0.47   FALSE   
+insee_oscd_c5_m2             0.07143   0.47   FALSE   
+diff(insee_tppre_c5_m3, 1)   0.33877   0.47   FALSE   
+diff(bdf_tuc_c5_m2, 1)       0.30556   0.47   FALSE   
+Variance                     0.28409   0.47   FALSE   
+Joint Lc                     1.92646   2.11    TRUE   
+
+
+Lecture: True means reject H0 at level 5% </code></pre>
+</div>
+</div>
+<p>Le test de Hansen conclut que seul l’acquis d’IPI évolue. Attention à l’interprétation du test sur la constante : si cette variable évolue il est possible que la constante aussi.</p>
+<p>On peut également faire des tests de Fisher sur le modèle précédent pour tester si les coefficients sont égaux entre les sous-périodes. Cela peut être fait avec la fonction <code>car::linearHypothesis()</code> :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># on rejette H0 =&gt; non constance des coefficients</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>car<span class="sc">::</span><span class="fu">linearHypothesis</span>(reg_morceaux<span class="sc">$</span>model, <span class="st">"`(Intercept)_2008.5` = `(Intercept)_2019.75`"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear hypothesis test
+
+Hypothesis:
+(Intercept)_2008.5` - Intercept)_2019.75` = 0
+
+Model 1: restricted model
+Model 2: y ~ 0 + (`(Intercept)_2008.5` + overhang_ipi1_c5_2008.5 + insee_bc_c5_m3_2008.5 + 
+    insee_oscd_c5_m2_2008.5 + `diff(insee_tppre_c5_m3, 1)_2008.5` + 
+    `diff(bdf_tuc_c5_m2, 1)_2008.5` + `(Intercept)_2019.75` + 
+    overhang_ipi1_c5_2019.75 + insee_bc_c5_m3_2019.75 + insee_oscd_c5_m2_2019.75 + 
+    `diff(insee_tppre_c5_m3, 1)_2019.75` + `diff(bdf_tuc_c5_m2, 1)_2019.75`)
+
+  Res.Df    RSS Df Sum of Sq      F  Pr(&gt;F)  
+1     96 40.182                              
+2     95 38.629  1    1.5522 3.8174 0.05366 .
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># on rejette H0 =&gt; non constance des coefficients</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>car<span class="sc">::</span><span class="fu">linearHypothesis</span>(reg_morceaux<span class="sc">$</span>model, <span class="st">"overhang_ipi1_c5_2019.75 = overhang_ipi1_c5_2008.5"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear hypothesis test
+
+Hypothesis:
+- overhang_ipi1_c5_2008.5  + overhang_ipi1_c5_2019.75 = 0
+
+Model 1: restricted model
+Model 2: y ~ 0 + (`(Intercept)_2008.5` + overhang_ipi1_c5_2008.5 + insee_bc_c5_m3_2008.5 + 
+    insee_oscd_c5_m2_2008.5 + `diff(insee_tppre_c5_m3, 1)_2008.5` + 
+    `diff(bdf_tuc_c5_m2, 1)_2008.5` + `(Intercept)_2019.75` + 
+    overhang_ipi1_c5_2019.75 + insee_bc_c5_m3_2019.75 + insee_oscd_c5_m2_2019.75 + 
+    `diff(insee_tppre_c5_m3, 1)_2019.75` + `diff(bdf_tuc_c5_m2, 1)_2019.75`)
+
+  Res.Df    RSS Df Sum of Sq      F    Pr(&gt;F)    
+1     96 48.734                                  
+2     95 38.629  1    10.105 24.851 2.781e-06 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># on ne rejette pas H0 =&gt; constance des coefficients</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>car<span class="sc">::</span><span class="fu">linearHypothesis</span>(reg_morceaux<span class="sc">$</span>model, <span class="st">"`diff(insee_tppre_c5_m3, 1)_2019.75` = `diff(insee_tppre_c5_m3, 1)_2008.5`"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear hypothesis test
+
+Hypothesis:
+- diff(insee_tppre_c5_m3,_2008.5`  + diff(insee_tppre_c5_m3,_2019.75` = 0
+
+Model 1: restricted model
+Model 2: y ~ 0 + (`(Intercept)_2008.5` + overhang_ipi1_c5_2008.5 + insee_bc_c5_m3_2008.5 + 
+    insee_oscd_c5_m2_2008.5 + `diff(insee_tppre_c5_m3, 1)_2008.5` + 
+    `diff(bdf_tuc_c5_m2, 1)_2008.5` + `(Intercept)_2019.75` + 
+    overhang_ipi1_c5_2019.75 + insee_bc_c5_m3_2019.75 + insee_oscd_c5_m2_2019.75 + 
+    `diff(insee_tppre_c5_m3, 1)_2019.75` + `diff(bdf_tuc_c5_m2, 1)_2019.75`)
+
+  Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
+1     96 39.171                           
+2     95 38.629  1   0.54182 1.3325 0.2513</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Exercice
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>En exploitant les résultats de l’exercice précédent, simplifier le modèle de régression par morceaux.</p>
+<p>On pourra pour cela utiliser le paramètre <code>fixed_var</code> de <code>piece_reg()</code> pour fixer certaines variables (i.e.&nbsp;: ne pas découper les régresseurs).</p>
+<p>Comparer les prévisions avec les modèles précédents.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Ici nous allons fixer toutes les variables sauf les deux premières (constante + acquis d’IPI – <em>overhang</em>)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>reg_morceaux2 <span class="ot">&lt;-</span> <span class="fu">piece_reg</span>(model_c5, <span class="at">fixed_var =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>))</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Rmq : la date de rupture est détectée sur le modèle complet et non</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co">#  sur le sous-modèle avec des variables fixes</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>reg_morceaux2 </span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$model
+
+Time series regression with "ts" data:
+Start = 1993(2), End = 2019(4)
+
+Call:
+dynlm::dynlm(formula = as.formula(formula), data = data2)
+
+Coefficients:
+              insee_bc_c5_m3              insee_oscd_c5_m2  
+                     0.12320                      -0.03110  
+`diff(insee_tppre_c5_m3, 1)`      `diff(bdf_tuc_c5_m2, 1)`  
+                     0.03626                       0.01969  
+        `(Intercept)_2008.5`       overhang_ipi1_c5_2008.5  
+                   -13.07645                       0.09204  
+       `(Intercept)_2019.75`      overhang_ipi1_c5_2019.75  
+                   -13.10151                       0.52974  
+
+
+$start
+[1] 1993    2
+
+$end
+[1] 2019    4
+
+$frequency
+[1] 4
+
+$breakdates
+[1] 2008.5
+
+$tvlm
+[1] FALSE
+
+attr(,"class")
+[1] "piecereg"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>prev_oos_rm2 <span class="ot">&lt;-</span> <span class="fu">oos_prev</span>(reg_morceaux2)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>res_rm2_is <span class="ot">&lt;-</span> <span class="fu">residuals</span>(reg_morceaux2<span class="sc">$</span>model)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>res_rm2_oos <span class="ot">&lt;-</span> prev_oos_rm2<span class="sc">$</span>residuals</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>rmse_rm2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">IS =</span> <span class="fu">rmse</span>(res_rm2_is), <span class="at">OOS =</span> <span class="fu">rmse</span>(res_rm2_oos))</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                IS       OOS
+rmse_lm  0.7656267 0.9298085
+rmse_rm  0.6008502 1.5042050
+rmse_rm2 0.6364012 1.4565471</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Après 2010</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos, res_rm2_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> res_lm_oos  res_rm_oos res_rm2_oos 
+  0.7431644   0.9633194   0.7018949 </code></pre>
+</div>
+</div>
+<p>Cela permet d’améliorer la qualité de la prévision en temps-réel mais pas celle dans l’échantillon.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="régression-locale" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Régression locale</h1>
+<p>Pour rappel, la régression locale revient, pour chaque date <span class="math inline">\(t\)</span> à estimer <span class="math inline">\(\beta_t\)</span></p>
+<p><span class="math display">\[
+\DeclareMathOperator{\argmin}{argmin}
+\hat \beta = \underset{\theta_0}{\argmin}\sum_{j=1}^T\left(y_{j}-x_j\theta_0\right)^2K_b\left(\frac{j-t}{T}\right)
+\]</span></p>
+<p>Dans le package ici utilisé (<code>tvReg</code>), le noyau utilisé par défaut est le noyau tricube :</p>
+<p><span class="math display">\[
+K(x)=\frac{35}{32}\left(
+  1-
+  \left\lvert
+  x
+  \right\lvert^2
+\right)^3 \mathbb 1_{|x| \leq 1}
+\text{ et }
+K_b(x)=\frac 1 b K(x/b)
+\]</span></p>
+<p>Pour estimer le modèle, nous utilisons la fonction <code>tvReg::tvLM</code> dont le premier paramètre est une formule. Mais contrairement à <code>dynlm</code>, <code>tvLM</code> ne gère pas directement les variables en différence :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tvReg)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>tvReg<span class="sc">::</span><span class="fu">tvLM</span>(<span class="at">formula =</span> prod_c5 <span class="sc">~</span> overhang_ipi1_c5 <span class="sc">+</span> insee_bc_c5_m3 <span class="sc">+</span> insee_oscd_c5_m2</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="sc">+</span> <span class="fu">diff</span>(insee_tppre_c5_m3, <span class="dv">1</span>) <span class="sc">+</span> <span class="fu">diff</span>(bdf_tuc_c5_m2, <span class="dv">1</span>),</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in model.frame.default(formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 + : variable lengths differ (found for 'diff(insee_tppre_c5_m3, 1)')</code></pre>
+</div>
+</div>
+<p>Pour éviter les problèmes liées au variables en différence, nous récupérons les données transformées de <code>dynlm</code> en utilisant la fonction <code>tvCoef::get_data(model_c5)</code>, ce qui permet également de simplifier la formule en <code>prod_c5 ~ .</code>(puisque la base de données alors utilisée ne contient que les exogènes utiles).</p>
+<div class="callout callout-style-default callout-note callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Exercice
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Estimer le modèle en utilisant les indications précédentes.</p>
+<p>Quelle fenêtre est utilisée (paramètre <span class="math inline">\(b\)</span>) ? Est-ce que les résultats sont différents de ceux de la régression linéaire ? Tracer les coefficients obtenus à chaque date (fonction <code>coef()</code> pour les extraire, il faudrait reconvertir le résultat en objet <code>ts()</code>)</p>
+<p>Comparer les erreurs de prévision dans l’échantillon avec ceux des modèles précédents.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>La fenêtre retenue est de 0,31 : les résultats seront donc différents de ceux de la régression linéaire.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>tvlm <span class="ot">&lt;-</span> tvReg<span class="sc">::</span><span class="fu">tvLM</span>(<span class="at">formula =</span> prod_c5 <span class="sc">~</span> .,</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data =</span> <span class="fu">get_data</span>(model_c5))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Calculating regression bandwidth... bw =  0.3066338 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>coefs_tvlm <span class="ot">&lt;-</span> <span class="fu">ts</span>(<span class="fu">coef</span>(tvlm), <span class="at">end =</span> <span class="fu">end</span>(data), <span class="at">frequency =</span> <span class="fu">frequency</span>(data))</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(coefs_tvlm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="TP_files/figure-html/coef-tvlm-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Ici toutes les coefficients sont variables alors que certains pourraient être fixes comme vu dans la partie précédente. Pour fixer certaines variables, on pourrait faire une régression en deux étapes.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>res_tvlm_is <span class="ot">&lt;-</span> <span class="fu">residuals</span>(tvlm)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>rmse_tvlm <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">IS =</span> <span class="fu">rmse</span>(res_tvlm_is), <span class="at">OOS =</span> <span class="cn">NA</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                 IS       OOS
+rmse_lm   0.7656267 0.9298085
+rmse_rm   0.6008502 1.5042050
+rmse_rm2  0.6364012 1.4565471
+rmse_tvlm 0.5601224        NA</code></pre>
+</div>
+</div>
+<p>Le RMSE dans l’échantillon est réduit.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Exercice
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>L’objectif de cet exercice est de calculer les prévisions hors échantillon.</p>
+<p>Appliquer la fonction <code>tvCoef::oos_prev()</code> au modèle précédent avec les paramètres <code>end = end(data), frequency = frequency(data)</code> (utiles pour garder la structure temporelle des données) : quels sont les paramètres réestimés ?</p>
+<p>Appliquer maintenant la même fonction avec le paramètre <code>fixed_bw = TRUE</code>. À quoi cela correspond ? Comparer les erreurs de prévisions obtenus.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Dans les modèles de régression locales, il y a deux sources de révisions en temps-réel :</p>
+<ol type="1">
+<li><p>Actualisation des coefficients du fait de l’ajout de nouveaux points (noyau asymétrique utilisé pour les premières estimations)</p></li>
+<li><p>Actualisation de la fenêtre.</p></li>
+</ol>
+<div class="callout callout-style-default callout-tip no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Actualisation de la fenêtre et des coefficients
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Par défaut, avec <code>oos_prev()</code> tous les paramètres sont réestimés. C’est en particulier le cas de la fenêtre qui est réestimée à chaque date, à chaque observation :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>prev_oos_tvlm_all <span class="ot">&lt;-</span> <span class="fu">oos_prev</span>(tvlm, <span class="at">end =</span> <span class="fu">end</span>(data), <span class="at">frequency =</span> <span class="fu">frequency</span>(data))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  0.7229482 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  3.84218 
+Calculating regression bandwidth... bw =  2.37942 
+Calculating regression bandwidth... bw =  1.471069 
+Calculating regression bandwidth... bw =  1.336507 
+Calculating regression bandwidth... bw =  2.187982 
+Calculating regression bandwidth... bw =  2.720982 
+Calculating regression bandwidth... bw =  1.861825 
+Calculating regression bandwidth... bw =  1.332401 
+Calculating regression bandwidth... bw =  1.423126 
+Calculating regression bandwidth... bw =  1.378801 
+Calculating regression bandwidth... bw =  1.383647 
+Calculating regression bandwidth... bw =  1.348802 
+Calculating regression bandwidth... bw =  1.319569 
+Calculating regression bandwidth... bw =  1.146523 
+Calculating regression bandwidth... bw =  1.095173 
+Calculating regression bandwidth... bw =  0.9674586 
+Calculating regression bandwidth... bw =  0.9737833 
+Calculating regression bandwidth... bw =  0.4515073 
+Calculating regression bandwidth... bw =  0.6010299 
+Calculating regression bandwidth... bw =  1.125076 
+Calculating regression bandwidth... bw =  0.7800465 
+Calculating regression bandwidth... bw =  0.3350958 
+Calculating regression bandwidth... bw =  0.3181148 
+Calculating regression bandwidth... bw =  0.3175687 
+Calculating regression bandwidth... bw =  0.3192663 
+Calculating regression bandwidth... bw =  0.3038067 
+Calculating regression bandwidth... bw =  0.3062916 
+Calculating regression bandwidth... bw =  0.321897 
+Calculating regression bandwidth... bw =  0.2823154 
+Calculating regression bandwidth... bw =  0.282671 
+Calculating regression bandwidth... bw =  0.2813243 
+Calculating regression bandwidth... bw =  0.2712527 
+Calculating regression bandwidth... bw =  0.2668975 
+Calculating regression bandwidth... bw =  0.2663408 
+Calculating regression bandwidth... bw =  0.2654891 
+Calculating regression bandwidth... bw =  0.2616418 
+Calculating regression bandwidth... bw =  0.256943 
+Calculating regression bandwidth... bw =  0.252477 
+Calculating regression bandwidth... bw =  0.256979 
+Calculating regression bandwidth... bw =  0.2529721 
+Calculating regression bandwidth... bw =  0.2465582 
+Calculating regression bandwidth... bw =  0.2405544 
+Calculating regression bandwidth... bw =  0.2476612 
+Calculating regression bandwidth... bw =  0.2447846 
+Calculating regression bandwidth... bw =  0.2402012 
+Calculating regression bandwidth... bw =  0.2380975 
+Calculating regression bandwidth... bw =  0.2325063 
+Calculating regression bandwidth... bw =  0.2455257 
+Calculating regression bandwidth... bw =  0.2563558 
+Calculating regression bandwidth... bw =  0.2392887 
+Calculating regression bandwidth... bw =  0.2319362 
+Calculating regression bandwidth... bw =  0.2385437 
+Calculating regression bandwidth... bw =  0.2172559 
+Calculating regression bandwidth... bw =  0.2134491 
+Calculating regression bandwidth... bw =  0.3141551 
+Calculating regression bandwidth... bw =  0.2627992 
+Calculating regression bandwidth... bw =  0.2459824 
+Calculating regression bandwidth... bw =  0.2756304 
+Calculating regression bandwidth... bw =  0.2683644 
+Calculating regression bandwidth... bw =  0.2585477 
+Calculating regression bandwidth... bw =  0.2563214 
+Calculating regression bandwidth... bw =  0.3066338 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>all_bw <span class="ot">&lt;-</span> <span class="fu">ts</span>(<span class="fu">sapply</span>(prev_oos_tvlm_all<span class="sc">$</span>model, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"bw"</span>),</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">end =</span> <span class="fu">end</span>(prev_oos_tvlm_all<span class="sc">$</span>prevision),</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">frequency =</span> <span class="fu">frequency</span>(data))</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(all_bw)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="TP_files/figure-html/bw-tvlm-soos-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>res_tvlm_all_oos <span class="ot">&lt;-</span> prev_oos_tvlm_all<span class="sc">$</span>residuals</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>rmse_tvlm[<span class="st">"OOS"</span>] <span class="ot">&lt;-</span> <span class="fu">rmse</span>(res_tvlm_all_oos)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                 IS       OOS
+rmse_lm   0.7656267 0.9298085
+rmse_rm   0.6008502 1.5042050
+rmse_rm2  0.6364012 1.4565471
+rmse_tvlm 0.5601224 0.9953914</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Après 2010</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_all_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      res_lm_oos       res_rm_oos      res_rm2_oos res_tvlm_all_oos 
+       0.7431644        0.9633194        0.7018949        0.8571885 </code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Actualisation des coefficients uniquement
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Fixons maintenant la fenêtre à la dernière valeur estimée :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>prev_oos_tvlm_lastbw <span class="ot">&lt;-</span> <span class="fu">oos_prev</span>(tvlm, <span class="at">end =</span> <span class="fu">end</span>(data), <span class="at">frequency =</span> <span class="fu">frequency</span>(data),<span class="at">fixed_bw =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>res_tvlm_lastbw_oos <span class="ot">&lt;-</span> prev_oos_tvlm_lastbw<span class="sc">$</span>residuals</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>rmse_tvlm[<span class="st">"OOS"</span>] <span class="ot">&lt;-</span> <span class="fu">rmse</span>(res_tvlm_lastbw_oos)</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                 IS       OOS
+rmse_lm   0.7656267 0.9298085
+rmse_rm   0.6008502 1.5042050
+rmse_rm2  0.6364012 1.4565471
+rmse_tvlm 0.5601224 1.1195514</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Après 2010</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_all_oos, res_tvlm_lastbw_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         res_lm_oos          res_rm_oos         res_rm2_oos    res_tvlm_all_oos 
+          0.7431644           0.9633194           0.7018949           0.8571885 
+res_tvlm_lastbw_oos 
+          0.7904943 </code></pre>
+</div>
+</div>
+<p>Le RMSE en temps-réel est réduit par rapport à précédemment mais il reste plus élevé qu’avec la régression linéaire.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<section id="remarque" class="level2 callout-remarque" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="remarque"><span class="header-section-number">2.1</span> Remarque</h2>
+<p>Pour fixer certaines variables, on pourrait faire une régression en deux étapes. La fonction <code>rmse_prev()</code> permet de calculer les prévisions dans l’échantillon et hors échantillon sur le modèle de régression linéaire, la régression par morceaux, la régression locale en fixant ou non certains coefficients.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>comp_prev <span class="ot">&lt;-</span> <span class="fu">rmse_prev</span>(model_c5, <span class="at">fixed_var =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>), <span class="at">fixed_bw =</span> <span class="cn">TRUE</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Calculating regression bandwidth... bw =  0.3066338 
+Calculating regression bandwidth... bw =  0.2701166 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>comp_prev</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                       RMSE_in_sample RMSE_out_of_sample
+lm                          0.7656267          0.9298085
+piece_lm                    0.6008502          1.5042050
+piece_lm fixed coeff        0.6364012          1.4565471
+TvLM                        0.5601224          1.1195514
+piece_tvlm                  0.5043489          1.6177417
+piece_tvlm fixed coeff      0.5127197          2.6673561
+TvLM fixed coeff            0.6509789          0.8886024</code></pre>
+</div>
+</div>
+<p>Sept modèles différents sont estimés, dans l’ordre :</p>
+<ol type="1">
+<li><p>Modèle de régression linéaire.</p></li>
+<li><p>Régression linéaire par morceaux où toutes les variables divisées en fonction de la date de rupture.</p></li>
+<li><p>Régression linéaire par morceaux où toutes les variables, sauf celles spécifiées par <code>fixed_var</code>, sont divisées en fonction de la date de rupture.</p></li>
+<li><p>Régression locale.</p></li>
+<li><p>Régression locale avec toutes les variables divisées en fonction de la date de rupture.</p></li>
+<li><p>Régression locale où toutes les variables, sauf celles spécifiées par <code>fixed_var</code>, sont divisées en fonction de la date de rupture.</p></li>
+<li><p>Régression locale où les variables celles spécifiées par <code>fixed_var</code> sont estimées par une régression linéaire (coefficients fixes sur l’ensemble de la période).</p></li>
+</ol>
+<p>On peut ensuite récupérer tous les résidus en temps réel :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>comp_prev_tr <span class="ot">&lt;-</span> <span class="fu">do.call</span>(cbind, <span class="fu">lapply</span>(comp_prev<span class="sc">$</span>prevision, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"residuals"</span>))</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(comp_prev_tr, <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>             prev_lm        prev_piece_lm   prev_piece_lm_fixe 
+           0.7431644            0.9633194            0.7018949 
+           prev_tvlm      prev_piece_tvlm prev_piece_tvlm_fixe 
+           0.7904943            0.9564709            0.7897816 
+      prev_tvlm_fixe 
+           0.6568764 </code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="modèles-espace-état" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Modèles espace-état</h1>
+<p>Dans cette dernière partie nous estimons un modèle espace-état avec coefficients qui varient dans le temps.</p>
+<p>Pour rappel, puisque nous avons 6 variables exogènes, le modèle s’écrit :</p>
+<p><span class="math display">\[
+\begin{cases}
+y_t=X_t\alpha_t+\varepsilon_t,\quad&amp;\varepsilon_t\sim\mathcal N(0,\sigma^2)\\
+\alpha_{t+1}=\alpha_t+\eta_t,\quad&amp;\eta_t\sim\mathcal N(0,\sigma^2 Q)
+\end{cases},\text{ avec }\eta_t\text{ et }\varepsilon_t\text{ indépendants et }
+Q = \begin{pmatrix}q_1 &amp;  &amp;0 \\ &amp; \ddots \\ 0 &amp; &amp; q_6 \end{pmatrix}
+\]</span></p>
+<p>La matrice <span class="math inline">\(Q\)</span> peut-être imposée par l’utilisateur (par exemple variance nulle si l’on veut fixer tous les coefficients) ou estimée.</p>
+<p>Il y a également deux opérations classiques :</p>
+<ul>
+<li><p><em>smoothing</em> : estimation de <span class="math inline">\(\hat\alpha_t=E[\alpha_t|y]\)</span> et <span class="math inline">\(V_t=V[\alpha_t-\hat\alpha_t]=V[\alpha_t|y]\)</span> : coefficients et variances estimés en utilisant l’ensemble des données disponibles ;</p></li>
+<li><p><em>filtering</em> : estimation de <span class="math inline">\(a_{t+1}=E[\alpha_{t+1}|Y_t]\)</span> et <span class="math inline">\(P_{t+1}=V[\alpha_{t+1}|Y_t]\)</span> : coefficients et variances estimés de manière dynamique en utilisant l’information disponible jusqu’à la date précédente (estimation en temps-réel).</p></li>
+</ul>
+<p>Pour estimer ces modèles nous utiliserons la fonction <code>tvCoef::ssm_lm()</code> dont le premier paramètre est un modèle de régression linéaire (le modèle <code>model_c5</code>).</p>
+<div class="callout callout-style-default callout-note callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Exercice
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Par défaut, <code>tvCoef::ssm_lm()</code> estime le modèle en forçant <span class="math inline">\(q_1=q_2=\dots=q_6=0\)</span>. Quel modèle retrouve-t-on ? Regarder les résultats de cette fonction et interpréter les quantités de <code>"smoothed_states"</code>, <code>"filtering_states"</code>,<code>"smoothed_stdev"</code> (sauf dernière colonne).</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Le modèle estimé est le modèle de régression linéaire !</p>
+<p>La composante <code>smoothed_states</code> contient les coefficients du modèle de régression linéaire estimé en utilisant toutes les données. La dernière colonne (<code>"noise"</code>) contient les résidus. La composante <code>smoothed_stdev</code> contient les écart-types associés aux différents coefficients, la dernière colonne s’interprète de manière plus complexe et ne sera pas détaillée ici.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>mod_ssm <span class="ot">&lt;-</span> <span class="fu">ssm_lm</span>(model_c5)</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_c5)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Time series regression with "ts" data:
+Start = 1993(2), End = 2019(4)
+
+Call:
+dynlm(formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 + 
+    insee_oscd_c5_m2 + diff(insee_tppre_c5_m3, 1) + diff(bdf_tuc_c5_m2, 
+    1), data = data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.89722 -0.42523 -0.01178  0.49598  1.70036 
+
+Coefficients:
+                             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)                -15.941850   2.969369  -5.369 5.08e-07 ***
+overhang_ipi1_c5             0.122222   0.024494   4.990 2.52e-06 ***
+insee_bc_c5_m3               0.148905   0.026959   5.523 2.59e-07 ***
+insee_oscd_c5_m2            -0.043472   0.014544  -2.989  0.00351 ** 
+diff(insee_tppre_c5_m3, 1)   0.037110   0.014126   2.627  0.00996 ** 
+diff(bdf_tuc_c5_m2, 1)       0.018458   0.008287   2.227  0.02814 *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.788 on 101 degrees of freedom
+Multiple R-squared:  0.6587,    Adjusted R-squared:  0.6418 
+F-statistic: 38.99 on 5 and 101 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(mod_ssm<span class="sc">$</span>smoothed_states, <span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       (Intercept) overhang_ipi1_c5 insee_bc_c5_m3 insee_oscd_c5_m2
+[105,]   -15.94185        0.1222215      0.1489051      -0.04347231
+[106,]   -15.94185        0.1222215      0.1489051      -0.04347231
+[107,]   -15.94185        0.1222215      0.1489051      -0.04347231
+       diff(insee_tppre_c5_m3, 1) diff(bdf_tuc_c5_m2, 1)      noise
+[105,]                 0.03710989             0.01845755  0.8987397
+[106,]                 0.03710989             0.01845755 -0.2066754
+[107,]                 0.03710989             0.01845755 -0.2024679</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(mod_ssm<span class="sc">$</span>smoothed_stdev, <span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       (Intercept) overhang_ipi1_c5 insee_bc_c5_m3 insee_oscd_c5_m2
+[105,]    2.969369       0.02449432     0.02695896       0.01454367
+[106,]    2.969369       0.02449432     0.02695896       0.01454367
+[107,]    2.969369       0.02449432     0.02695896       0.01454367
+       diff(insee_tppre_c5_m3, 1) diff(bdf_tuc_c5_m2, 1)     noise
+[105,]                 0.01412646            0.008286736 0.1531623
+[106,]                 0.01412646            0.008286736 0.1278911
+[107,]                 0.01412646            0.008286736 0.1491448</code></pre>
+</div>
+</div>
+<p>La composante <code>filtering_states</code> donne les estimations des coefficients en temps réel : la valeur à la date <span class="math inline">\(t\)</span> correspond aux estimations des coefficients en utilisant les données jusqu’en <span class="math inline">\(t-1\)</span>. Ainsi, en estimant le modèle jusqu’en 2010T1, les coefficients obtenus sont ceux de la composante <code>filtering_states</code> de 2010T2&nbsp;:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">dynlm</span>(</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> prod_c5 <span class="sc">~</span> overhang_ipi1_c5 <span class="sc">+</span> insee_bc_c5_m3 <span class="sc">+</span> insee_oscd_c5_m2</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>  <span class="sc">+</span> <span class="fu">diff</span>(insee_tppre_c5_m3, <span class="dv">1</span>) <span class="sc">+</span> <span class="fu">diff</span>(bdf_tuc_c5_m2, <span class="dv">1</span>),</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">window</span>(data, <span class="at">end =</span> <span class="dv">2010</span>)</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Time series regression with "ts" data:
+Start = 1993(2), End = 2010(1)
+
+Call:
+dynlm(formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 + 
+    insee_oscd_c5_m2 + diff(insee_tppre_c5_m3, 1) + diff(bdf_tuc_c5_m2, 
+    1), data = window(data, end = 2010))
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.74106 -0.41709  0.00975  0.42044  1.77480 
+
+Coefficients:
+                            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)                -12.67832    4.07290  -3.113 0.002802 ** 
+overhang_ipi1_c5             0.13517    0.03481   3.883 0.000253 ***
+insee_bc_c5_m3               0.11776    0.03758   3.134 0.002635 ** 
+insee_oscd_c5_m2            -0.02609    0.02003  -1.302 0.197606    
+diff(insee_tppre_c5_m3, 1)   0.04778    0.01753   2.726 0.008329 ** 
+diff(bdf_tuc_c5_m2, 1)       0.02106    0.01007   2.091 0.040603 *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.822 on 62 degrees of freedom
+Multiple R-squared:  0.7234,    Adjusted R-squared:  0.7011 
+F-statistic: 32.43 on 5 and 62 DF,  p-value: 4.302e-16</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">window</span>(mod_ssm<span class="sc">$</span>filtering_states, <span class="at">start =</span> <span class="dv">2010</span>, <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2010</span>,<span class="dv">2</span>))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        (Intercept) overhang_ipi1_c5 insee_bc_c5_m3 insee_oscd_c5_m2
+2010 Q1   -12.93133        0.1338363      0.1201360      -0.02742855
+2010 Q2   -12.67832        0.1351715      0.1177635      -0.02609094
+        diff(insee_tppre_c5_m3, 1) diff(bdf_tuc_c5_m2, 1) noise
+2010 Q1                 0.04742629             0.02107594     0
+2010 Q2                 0.04777549             0.02106144     0</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Exercice
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Estimer maintenant le modèle en utilisant les paramètres suivant :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>model_ssm <span class="ot">&lt;-</span> <span class="fu">ssm_lm</span>(model_c5,</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_intercept =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_intercept =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_variables =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_variables =</span> <span class="cn">FALSE</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Les paramètres <code>fixed_var_intercept = FALSE</code> et <code>fixed_var_variables = FALSE</code> permettent d’indiquer que les variances <span class="math inline">\(q_1,\dots, q_6\)</span> seront estimées. Les paramètres <code>var_intercept</code> et <code>var_variables</code> n’auront généralement aucun impact sur les résultats (puisque dans notre cas les variances sont estimées), ils interviennent toutefois dans le processus algorithmique : les modifier permet dans certains cas d’éviter des erreurs d’optimisation.</p>
+<p>Regarder les coefficients <code>model_ssm$smoothed_states</code> : quelles sont les variables qui varient dans le temps ? À partir de <code>model_ssm$fitted</code>, comparer la qualité prédictive de ce modèle avec les précédents.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-16" class="callout-16-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Les variables fixes sont la constante et les carnets de commandes globaux :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(model_ssm<span class="sc">$</span>smoothed_states[,<span class="sc">-</span><span class="fu">ncol</span>(model_ssm<span class="sc">$</span>smoothed_states)])</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="TP_files/figure-html/coef-ssm-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>On peut également vérifier en regardant les variances <span class="math inline">\(\sigma^2q_i\)</span> :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>model_ssm<span class="sc">$</span>parameters<span class="sc">$</span>parameters <span class="sc">*</span> model_ssm<span class="sc">$</span>parameters<span class="sc">$</span>scaling</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               (Intercept).var           overhang_ipi1_c5.var 
+                  0.000000e+00                   6.770260e-04 
+            insee_bc_c5_m3.var           insee_oscd_c5_m2.var 
+                  4.348269e-07                   0.000000e+00 
+diff(insee_tppre_c5_m3, 1).var     diff(bdf_tuc_c5_m2, 1).var 
+                  9.975859e-05                   2.956853e-05 
+                     noise.var 
+                  3.451667e-01 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>res_ssm_is <span class="ot">&lt;-</span> y <span class="sc">-</span> model_ssm<span class="sc">$</span>fitted[,<span class="st">"smoothed"</span>]</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>res_ssm_oos <span class="ot">&lt;-</span> y <span class="sc">-</span> model_ssm<span class="sc">$</span>fitted[,<span class="st">"filtering"</span>]</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>rmse_ssm <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">IS =</span> <span class="fu">rmse</span>(res_ssm_is), <span class="at">OOS =</span> <span class="fu">rmse</span>(res_ssm_oos))</span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm, rmse_ssm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                 IS       OOS
+rmse_lm   0.7656267 0.9298085
+rmse_rm   0.6008502 1.5042050
+rmse_rm2  0.6364012 1.4565471
+rmse_tvlm 0.5601224 1.1195514
+rmse_ssm  0.5165990 0.7938357</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Après 2010</span></span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_lastbw_oos, res_ssm_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         res_lm_oos          res_rm_oos         res_rm2_oos res_tvlm_lastbw_oos 
+          0.7431644           0.9633194           0.7018949           0.7904943 
+        res_ssm_oos 
+          0.7005741 </code></pre>
+</div>
+</div>
+<p>En réalité, la composante <em>filtering</em> ne correspond pas exactement à de l’estimation en temps-réel car certains paramètres ne sont pas estimés de manière dynamique. Pour avoir une vraie estimation en temps-réel, il faudrait réestimer le modèle à chaque date : on peut pour cela utiliser la fonction <code>ssm_lm_oos()</code>. Pour que cette fonction marche, il faut parfois jouer sur les paramètres <code>var_intercept</code> et <code>var_variables</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>model_ssm_oos <span class="ot">&lt;-</span> <span class="fu">ssm_lm_oos</span>(model_c5,</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_intercept =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_intercept =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_variables =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_variables =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>res_ssm_oos <span class="ot">&lt;-</span> y <span class="sc">-</span> model_ssm_oos<span class="sc">$</span>prevision</span>
+<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a>rmse_ssm <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">IS =</span> <span class="fu">rmse</span>(res_ssm_is), <span class="at">OOS =</span> <span class="fu">rmse</span>(res_ssm_oos))</span>
+<span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm, rmse_ssm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                 IS       OOS
+rmse_lm   0.7656267 0.9298085
+rmse_rm   0.6008502 1.5042050
+rmse_rm2  0.6364012 1.4565471
+rmse_tvlm 0.5601224 1.1195514
+rmse_ssm  0.5165990 0.7576956</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_lastbw_oos, res_ssm_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         res_lm_oos          res_rm_oos         res_rm2_oos res_tvlm_lastbw_oos 
+          0.7431644           0.9633194           0.7018949           0.7904943 
+        res_ssm_oos 
+          0.6838548 </code></pre>
+</div>
+</div>
+<p>On peut enfin faire un graphique avec toutes les prévisions, en utilisant par exemple le package <code>dygraphs</code> :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dygraphs)</span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>prevs <span class="ot">&lt;-</span> <span class="fu">ts.intersect</span>(y, y <span class="sc">-</span> res_lm_oos, y <span class="sc">-</span> res_rm2_oos, y <span class="sc">-</span> res_tvlm_lastbw_oos, y <span class="sc">-</span> res_ssm_oos)</span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(prevs) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"y"</span>, <span class="st">"lm"</span>, <span class="st">"Reg par morceaux"</span>, <span class="st">"Reg locale"</span>, <span class="st">"SSM"</span>)</span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a><span class="fu">dygraph</span>(prevs) <span class="sc">%&gt;%</span> </span>
+<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dyRangeSelector</span>(<span class="at">dateWindow =</span> <span class="fu">c</span>(<span class="st">"2010-01-01"</span>, <span class="st">"2019-12-01"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dyOptions</span>(<span class="at">colors =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"red"</span>, <span class="st">"green"</span>, <span class="st">"blue"</span>, <span class="st">"purple"</span>))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="dygraphs html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-c8e7598a52d015e685d6" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-c8e7598a52d015e685d6">{"x":{"attrs":{"labels":["quarter","y","lm","Reg par morceaux","Reg locale","SSM"],"legend":"auto","retainDateWindow":false,"axes":{"x":{"pixelsPerLabel":60,"drawAxis":true},"y":{"drawAxis":true}},"showRangeSelector":true,"dateWindow":["2010-01-01T00:00:00.000Z","2019-12-01T00:00:00.000Z"],"rangeSelectorHeight":40,"rangeSelectorPlotFillColor":" #A7B1C4","rangeSelectorPlotStrokeColor":"#808FAB","interactionModel":"Dygraph.Interaction.defaultModel","stackedGraph":false,"fillGraph":false,"fillAlpha":0.15,"stepPlot":false,"drawPoints":false,"pointSize":1,"drawGapEdgePoints":false,"connectSeparatedPoints":false,"strokeWidth":1,"strokeBorderColor":"white","colors":["black","red","green","blue","purple"],"colorValue":0.5,"colorSaturation":1,"includeZero":false,"drawAxesAtZero":false,"logscale":false,"axisTickSize":3,"axisLineColor":"black","axisLineWidth":0.3,"axisLabelColor":"black","axisLabelFontSize":14,"axisLabelWidth":60,"drawGrid":true,"gridLineWidth":0.3,"rightGap":5,"digitsAfterDecimal":2,"labelsKMB":false,"labelsKMG2":false,"labelsUTC":false,"maxNumberWidth":6,"animatedZooms":false,"mobileDisableYTouch":true,"disableZoom":false},"scale":"quarterly","annotations":[],"shadings":[],"events":[],"format":"date","data":[["2000-04-01T00:00:00.000Z","2000-07-01T00:00:00.000Z","2000-10-01T00:00:00.000Z","2001-01-01T00:00:00.000Z","2001-04-01T00:00:00.000Z","2001-07-01T00:00:00.000Z","2001-10-01T00:00:00.000Z","2002-01-01T00:00:00.000Z","2002-04-01T00:00:00.000Z","2002-07-01T00:00:00.000Z","2002-10-01T00:00:00.000Z","2003-01-01T00:00:00.000Z","2003-04-01T00:00:00.000Z","2003-07-01T00:00:00.000Z","2003-10-01T00:00:00.000Z","2004-01-01T00:00:00.000Z","2004-04-01T00:00:00.000Z","2004-07-01T00:00:00.000Z","2004-10-01T00:00:00.000Z","2005-01-01T00:00:00.000Z","2005-04-01T00:00:00.000Z","2005-07-01T00:00:00.000Z","2005-10-01T00:00:00.000Z","2006-01-01T00:00:00.000Z","2006-04-01T00:00:00.000Z","2006-07-01T00:00:00.000Z","2006-10-01T00:00:00.000Z","2007-01-01T00:00:00.000Z","2007-04-01T00:00:00.000Z","2007-07-01T00:00:00.000Z","2007-10-01T00:00:00.000Z","2008-01-01T00:00:00.000Z","2008-04-01T00:00:00.000Z","2008-07-01T00:00:00.000Z","2008-10-01T00:00:00.000Z","2009-01-01T00:00:00.000Z","2009-04-01T00:00:00.000Z","2009-07-01T00:00:00.000Z","2009-10-01T00:00:00.000Z","2010-01-01T00:00:00.000Z","2010-04-01T00:00:00.000Z","2010-07-01T00:00:00.000Z","2010-10-01T00:00:00.000Z","2011-01-01T00:00:00.000Z","2011-04-01T00:00:00.000Z","2011-07-01T00:00:00.000Z","2011-10-01T00:00:00.000Z","2012-01-01T00:00:00.000Z","2012-04-01T00:00:00.000Z","2012-07-01T00:00:00.000Z","2012-10-01T00:00:00.000Z","2013-01-01T00:00:00.000Z","2013-04-01T00:00:00.000Z","2013-07-01T00:00:00.000Z","2013-10-01T00:00:00.000Z","2014-01-01T00:00:00.000Z","2014-04-01T00:00:00.000Z","2014-07-01T00:00:00.000Z","2014-10-01T00:00:00.000Z","2015-01-01T00:00:00.000Z","2015-04-01T00:00:00.000Z","2015-07-01T00:00:00.000Z","2015-10-01T00:00:00.000Z","2016-01-01T00:00:00.000Z","2016-04-01T00:00:00.000Z","2016-07-01T00:00:00.000Z","2016-10-01T00:00:00.000Z","2017-01-01T00:00:00.000Z","2017-04-01T00:00:00.000Z","2017-07-01T00:00:00.000Z","2017-10-01T00:00:00.000Z","2018-01-01T00:00:00.000Z","2018-04-01T00:00:00.000Z","2018-07-01T00:00:00.000Z","2018-10-01T00:00:00.000Z","2019-01-01T00:00:00.000Z","2019-04-01T00:00:00.000Z","2019-07-01T00:00:00.000Z","2019-10-01T00:00:00.000Z"],[1.41586211509732,0.774997801424671,1.58934473618186,0.155696338451627,-0.592870544090052,0.226483466706928,-2.11982955279129,0.963039511004604,-0.102354145342887,-0.235437739797695,-0.872956909361067,-0.301998258550185,-1.04692941241501,0.384323188988689,0.0957129501847565,1.14523338299717,-0.213261806349485,-0.565139797739445,0.270327162340323,0.480636428926573,-0.30899494171982,0.956330866212962,0.882809256386174,0.233933329001235,1.80334954078876,-0.00742949935788051,1.26204729758417,0.271485623840428,0.560317792180642,0.515613954842187,-0.216150250279235,0.916223583429199,-2.14857189807635,-1.05589084229861,-5.8173949018235,-6.42225601171369,-0.176931502232702,1.78330278769172,0.964283598886451,-0.167783266259136,1.69005476811697,0.509685174055763,1.02110044270685,2.64191319590681,-0.567791159314213,-0.544266244339853,-0.818624262677459,-0.835556962597805,-1.0865971153298,0.591340833640719,-2.15206554747035,-0.0667548924309314,0.474627915152936,-0.726657724383273,0.528715104803079,0.399710151702859,-0.221177127956784,0.312667708892356,-0.331464725175035,0.291725497975426,0.468893620487054,0.274464389114071,0.779562751914264,-0.0882400128349059,-0.662958077650977,1.02301199672081,-0.117723703610573,0.810161345691718,1.08515516810825,0.854537696229252,1.28931692924346,-1.72138986292636,1.05696421980381,0.375199220825206,-0.348435897718624,0.648409405255879,0.247358758149097,-0.312547978856403,-0.707362955303026],[1.94755141898527,1.73422528752702,1.37616471032235,0.254996276690519,-0.246677138937018,-1.09793050571945,-0.492578216193497,0.431087825025634,0.772219054049658,-0.663618810391756,-0.330645671389756,-0.791122488118662,-0.745953604667876,-0.0359228885525847,0.200433712061047,0.224438712729141,0.185503148704833,0.780686122098162,0.478004919784415,-0.115981918951176,-0.292201099777837,-0.17467232516241,0.541615678207942,0.433367068567272,0.221407239589946,0.440042263357301,0.779506963647463,0.591942200995068,0.56389272622375,0.592604832656598,0.77555342400597,0.639021203498906,-0.690137011727574,-1.07333628721344,-3.07537399824855,-3.48142903772387,-1.74917648818361,-0.54782416475963,-0.886811714239244,-0.0222237033869914,0.405931928280361,0.296636765454698,0.713994967444365,0.977973468543658,0.388084550864051,-1.50952136335872,-0.657878644332294,-0.45042661988344,-1.3978542711124,-0.584376031749234,-1.1173891308148,-0.455285702537204,-0.222835632630649,-0.365435439691972,-0.141803716121738,0.0689362418957251,-0.482696709351492,-0.123201124421287,-0.209338546104338,0.319218155602497,-0.191620640963533,0.26127619475721,-0.0825543149146388,0.374824974364394,0.0969045657585648,-0.203278424875786,0.485605901242028,-0.148250018675063,0.962296779133616,0.684495648208485,0.960796206130379,-0.0966784231119773,-0.380260087783288,0.171534693606004,-0.0658474155172408,-0.161284206178646,-0.679809763824402,-0.095457383359609,-0.497373319917707],[1.94755141898527,1.73422528752702,1.37616471032235,0.254996276690526,-0.24667713893702,-1.09793050571946,-0.4925782161935,0.431087825025629,0.772219054049656,-0.663618810391756,-0.330645671389759,-0.791122488118663,-0.745953604667882,-0.0359228885525835,0.200433712061047,0.224438712729141,0.185503148704833,0.780686122098157,0.478004919784416,-0.115981918951176,-0.29220109977784,-0.174672325162411,0.541615678207939,0.433367068567272,0.221407239589947,0.440042263357302,0.779506963647462,0.591942200995062,0.563892726223751,0.5926048326566,0.775553424005967,0.639021203498907,-0.690137011727572,-1.07333628721344,4.78869923143843,-5.19926167882638,-3.81167188318731,0.573120113383451,0.238806663258004,0.277655041353571,1.44681050671245,2.04827200504972,0.686808303485731,3.07077603910271,-0.777380094937548,-1.33453061311186,-0.93782876088464,-1.63714997372317,-1.19700463715115,-0.0315435601202936,-2.31105657015221,0.40025819870958,0.840397362122367,-0.784448766480773,0.248957366678811,-1.06937146411826,0.081053894792915,0.50225927837903,-0.838265154810562,0.901674831687053,0.0438027726014673,-0.255079737737064,-0.339609730822587,1.34897554870549,-0.058305769063877,0.022221351530513,-0.439778115315923,-0.157369306021255,1.46255495523252,1.13647241897067,2.04750737743798,-1.17445044813651,0.675246508088023,0.342125097867305,0.561312301203492,0.180680539889758,-0.567014555648478,0.0699131675842248,0.842585193332272],[2.35143102075651,-0.911623994016276,1.57436378822881,-0.485914047728637,-1.98751739112068,-0.501951149160801,1.09241313425109,-0.400432404017967,-0.0548194949724067,-3.54899912949212,-0.851526800221034,-0.493232804209186,-0.215370507078353,-0.994590107737747,0.392693452230771,-0.340159180635187,0.162322469440055,0.618547238991867,-0.0173850032431949,0.776232144787706,0.701187629322888,-0.315094870855135,1.38936534133281,-0.0542304995038755,0.876107063426866,1.49485905099384,0.417273968924164,0.800387003673299,0.916748067264495,-0.301484882618913,0.457422412858631,1.21685152112832,-0.715819315692021,-0.461549138199587,-4.54283842650104,-4.13357814401372,-4.60429511955352,1.22232001992385,0.870091156924388,0.0437532021532778,0.182081934884352,1.52213512067248,0.283960248412208,1.86418099772478,-0.846715914018536,-2.41380970026913,-0.926673665022203,-1.17854547417432,-1.52304728411648,-0.169316322084897,-1.98106437546427,0.345694531493438,0.779925549867299,-0.239759666207477,0.296415736589983,-1.1359683333129,0.0396256643781161,0.336862132594938,-0.410081919758438,0.793968396825892,0.105699081984043,0.0860633276841223,0.143340651381122,1.20013342620175,-0.157063069942564,0.0295786179602606,0.213103795235385,0.199599593467738,1.05915899800136,0.849595083792179,1.60369764528579,0.379614433260415,0.786143038271409,-0.484261321252098,0.639351161842652,0.275094729264203,-0.244203348615899,0.0113410782841336,0.713317025930038],[1.98979882277973,1.35538516223411,1.32433329134636,0.0672513336216543,-0.691026332842418,-0.921983770944892,-0.303021648740713,0.382880544947518,0.740264166900343,-0.801172689809113,-0.495833099848269,-0.831459451328818,-0.77474155514957,-0.0168072585781767,0.292239190724659,0.175613122494156,0.118495352500674,0.732304550940743,0.411777643923912,-0.0178954544576304,-0.255097433964327,-0.300074020852242,0.498226394539347,0.332221580614521,0.338495374686213,0.538158320271909,0.895754686326222,0.62951823327501,0.617268347502848,0.5044842530816,0.624149294932749,0.854065200586872,-1.29519145158935,-0.80170759202568,-4.20798196491505,-4.2435504712064,-1.28867187168701,0.704050766559277,0.242903079176499,-0.129220554928108,0.427804710296164,0.91604997817249,0.486077227608319,1.76787036294669,-0.896646051387843,-2.24640882856832,-0.838942611606468,-1.26720642905264,-1.25021227119585,0.0322005569690608,-1.88016923533287,0.413549089300427,0.684150438801492,-0.700402439059565,0.236855111374155,-0.832136282998556,0.0712274499443103,0.516267087927257,-0.593283497932134,0.840437985162887,0.0343499390264507,0.00144365879960345,-0.142710449927288,1.19849962890267,-0.0577254998507133,0.132090914656283,-0.24629203653431,0.137168568162909,1.13561480082676,0.871583031548468,1.52114626480825,-0.287592546103022,0.771064475084322,-0.0240835062854422,0.564572130103209,0.142707257634056,-0.356672144967582,-0.0628262946359741,0.575989946312545]],"fixedtz":false,"tzone":""},"evals":["attrs.interactionModel"],"jsHooks":[]}</script>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Exercice facultatif
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>L’objectif de cet exercice est d’estimer un nouveau modèle jusqu’en 2022T4 pour faire une prévision jusqu’en 2023T1 :</p>
+<ol type="1">
+<li><p>Créer des indicatrices sur les 4 premiers trimestres de l’année 2020.</p></li>
+<li><p>Estimer un nouveau modèle <code>dynlm</code> en ajoutant ces indicatrices.</p></li>
+<li><p>Estimer un nouveau modèle espace-état.</p></li>
+<li><p>Utiliser les variables exogènes du modèles jusqu’en 2023T1 (on peut pour cela appliquer la fonction <code>tvCoef::full_exogeneous_matrix()</code> sur le modèle <code>dynlm</code>) et la dernière ligne de la composante <code>"smoothed_states"</code> pour effectuer des prévisions sur 2023T1.</p></li>
+</ol>
+<div class="callout callout-style-default callout-important callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Attention
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Au moment de la rédaction du TP, toutes les données du 2023T1 ne sont pas disponibles, la prévision ne peut donc pas être faite jusqu’à cette date. Toutefois, cet exercice vous permet de voir comment procéder lorsque ces données seront disponibles. Ce TP sera mis à jour le 28 mars avec les nouvelles données.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-caution callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Indice (création des indicatrices)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-19" class="callout-19-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>On pourra utiliser le programme suivant pour créer les indicatrices :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>ind <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="fu">time</span>(manufacturing) <span class="sc">==</span> <span class="dv">2020</span>, <span class="fu">time</span>(manufacturing) <span class="sc">==</span> <span class="fl">2020.25</span>, <span class="fu">time</span>(manufacturing) <span class="sc">==</span> <span class="fl">2020.5</span>,</span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a><span class="fu">time</span>(manufacturing) <span class="sc">==</span> <span class="fl">2020.75</span>)</span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>ind <span class="ot">&lt;-</span> <span class="fu">ts</span>(<span class="fu">apply</span>(ind,<span class="dv">2</span>, as.numeric), <span class="at">start =</span> <span class="fu">start</span>(manufacturing), <span class="at">frequency =</span> <span class="dv">4</span>)</span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ind) <span class="ot">&lt;-</span> <span class="fu">sprintf</span>(<span class="st">"ind2020Q%i"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)</span>
+<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">ts.union</span>(manufacturing, ind)</span>
+<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">colnames</span>(manufacturing), <span class="fu">colnames</span>(ind))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-20" class="callout-20-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Estimation du modèle de régression linéaire :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>ind <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="fu">time</span>(manufacturing) <span class="sc">==</span> <span class="dv">2020</span>, <span class="fu">time</span>(manufacturing) <span class="sc">==</span> <span class="fl">2020.25</span>, <span class="fu">time</span>(manufacturing) <span class="sc">==</span> <span class="fl">2020.5</span>,</span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a><span class="fu">time</span>(manufacturing) <span class="sc">==</span> <span class="fl">2020.75</span>)</span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>ind <span class="ot">&lt;-</span> <span class="fu">ts</span>(<span class="fu">apply</span>(ind,<span class="dv">2</span>, as.numeric), <span class="at">start =</span> <span class="fu">start</span>(manufacturing), <span class="at">frequency =</span> <span class="dv">4</span>)</span>
+<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ind) <span class="ot">&lt;-</span> <span class="fu">sprintf</span>(<span class="st">"ind2020Q%i"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)</span>
+<span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">ts.union</span>(manufacturing, ind)</span>
+<span id="cb78-6"><a href="#cb78-6" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">colnames</span>(manufacturing), <span class="fu">colnames</span>(ind))</span>
+<span id="cb78-7"><a href="#cb78-7" aria-hidden="true" tabindex="-1"></a>model_c5_complet <span class="ot">&lt;-</span> <span class="fu">dynlm</span>(</span>
+<span id="cb78-8"><a href="#cb78-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> prod_c5 <span class="sc">~</span> overhang_ipi1_c5 <span class="sc">+</span> insee_bc_c5_m3 <span class="sc">+</span> insee_oscd_c5_m2</span>
+<span id="cb78-9"><a href="#cb78-9" aria-hidden="true" tabindex="-1"></a>  <span class="sc">+</span> <span class="fu">diff</span>(insee_tppre_c5_m3, <span class="dv">1</span>) <span class="sc">+</span> <span class="fu">diff</span>(bdf_tuc_c5_m2, <span class="dv">1</span>) </span>
+<span id="cb78-10"><a href="#cb78-10" aria-hidden="true" tabindex="-1"></a>  <span class="sc">+</span> ind2020Q1 <span class="sc">+</span> ind2020Q2 <span class="sc">+</span> ind2020Q3 <span class="sc">+</span> ind2020Q4,</span>
+<span id="cb78-11"><a href="#cb78-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data</span>
+<span id="cb78-12"><a href="#cb78-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb78-13"><a href="#cb78-13" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_c5_complet)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Time series regression with "ts" data:
+Start = 1990(2), End = 2022(4)
+
+Call:
+dynlm(formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 + 
+    insee_oscd_c5_m2 + diff(insee_tppre_c5_m3, 1) + diff(bdf_tuc_c5_m2, 
+    1) + ind2020Q1 + ind2020Q2 + ind2020Q3 + ind2020Q4, data = data)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-3.0369 -0.3704  0.0000  0.4409  1.8337 
+
+Coefficients:
+                            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)                -15.32223    2.84160  -5.392 3.50e-07 ***
+overhang_ipi1_c5             0.13436    0.02188   6.141 1.08e-08 ***
+insee_bc_c5_m3               0.14237    0.02581   5.516 2.00e-07 ***
+insee_oscd_c5_m2            -0.04236    0.01389  -3.048  0.00283 ** 
+diff(insee_tppre_c5_m3, 1)   0.02288    0.01295   1.767  0.07973 .  
+diff(bdf_tuc_c5_m2, 1)       0.01797    0.00807   2.227  0.02780 *  
+ind2020Q1                   -5.02746    0.84001  -5.985 2.27e-08 ***
+ind2020Q2                  -13.43482    1.18843 -11.305  &lt; 2e-16 ***
+ind2020Q3                   21.85700    0.96497  22.651  &lt; 2e-16 ***
+ind2020Q4                    2.65855    0.84700   3.139  0.00213 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.8198 on 121 degrees of freedom
+  (131 observations deleted due to missingness)
+Multiple R-squared:  0.9313,    Adjusted R-squared:  0.9262 
+F-statistic: 182.3 on 9 and 121 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>prev_oos_lm_complet <span class="ot">&lt;-</span> <span class="fu">oos_prev</span>(model_c5_complet)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Estimation du modèle espace-état :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>model_ssm_complet <span class="ot">&lt;-</span> <span class="fu">ssm_lm</span>(model_c5_complet,</span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_intercept =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_intercept =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_variables =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_variables =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a><span class="co"># # Rmq : on pourrait également fixer à 0 les variances des coefficients associés aux indicatrices :</span></span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a><span class="co"># model_ssm_complet &lt;- ssm_lm(model_c5_complet,</span></span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a><span class="co">#         var_intercept = 0.01, fixed_var_intercept = FALSE,</span></span>
+<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a><span class="co">#         var_variables = c(rep(0.01,5), rep(0, 4)), </span></span>
+<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a><span class="co">#         fixed_var_variables = c(rep(FALSE,5), rep(TRUE, 4)))</span></span>
+<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-10"><a href="#cb81-10" aria-hidden="true" tabindex="-1"></a>model_ssm_complet_oos <span class="ot">&lt;-</span> <span class="fu">ssm_lm_oos</span>(model_c5_complet, <span class="at">date =</span> <span class="dv">18</span><span class="sc">*</span><span class="dv">4</span>,</span>
+<span id="cb81-11"><a href="#cb81-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_intercept =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_intercept =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb81-12"><a href="#cb81-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_variables =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_variables =</span> <span class="cn">FALSE</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Comme vous allez le voir, les soldes d’opinion de l’Insee de mars ne sont pas encore disponibles au moment de l’écriture du TP : la prévisions de 2023T1 ne peut donc pas être calculé. Toutefois, ce code reste valide si vous utilisez un autre modèle où les données sont disponibles. Par ailleurs, ce TP sera mis à jour au moment de la publication de ces soldes d’opinion.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>X_variables <span class="ot">=</span> <span class="fu">full_exogeneous_matrix</span>(model_c5_complet)</span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Comme vous voyez ici, les soldes d'opinion de l'Insee de mars ne sont pas encore disponibles au moment de l'écrit</span></span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a><span class="fu">window</span>(X_variables, <span class="at">start =</span> <span class="dv">2022</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        (Intercept) overhang_ipi1_c5 insee_bc_c5_m3 insee_oscd_c5_m2
+2022 Q1           1         7.629539          108.0              4.5
+2022 Q2           1         2.870669          105.8             -2.2
+2022 Q3           1         2.663170           97.9            -16.0
+2022 Q4           1         1.979440           96.2            -24.6
+2023 Q1           1         1.737138             NA            -23.7
+        diff(insee_tppre_c5_m3, 1) diff(bdf_tuc_c5_m2, 1) ind2020Q1 ind2020Q2
+2022 Q1                      -20.1                   0.38         0         0
+2022 Q2                        0.1                  -3.20         0         0
+2022 Q3                       -9.7                  -0.35         0         0
+2022 Q4                       10.1                   3.97         0         0
+2023 Q1                         NA                     NA         0         0
+        ind2020Q3 ind2020Q4
+2022 Q1         0         0
+2022 Q2         0         0
+2022 Q3         0         0
+2022 Q4         0         0
+2023 Q1         0         0</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a>prevs_lm <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(X_variables <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="fu">coef</span>(model_c5_complet)))</span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a>prevs_lm <span class="ot">&lt;-</span> prevs_lm[<span class="fu">length</span>(prevs_lm)]</span>
+<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a>prevs_ssm <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(X_variables <span class="sc">%*%</span> <span class="fu">diag</span>(model_ssm_complet<span class="sc">$</span>smoothed_states[<span class="fu">nrow</span>(model_ssm_complet<span class="sc">$</span>smoothed_states), <span class="sc">-</span> <span class="fu">ncol</span>(model_ssm_complet<span class="sc">$</span>smoothed_states)]))</span>
+<span id="cb84-4"><a href="#cb84-4" aria-hidden="true" tabindex="-1"></a>prevs_ssm <span class="ot">&lt;-</span> prevs_ssm[<span class="fu">length</span>(prevs_ssm)]</span>
+<span id="cb84-5"><a href="#cb84-5" aria-hidden="true" tabindex="-1"></a>full_prevs <span class="ot">&lt;-</span> <span class="fu">ts.union</span>(prev_oos_lm_complet<span class="sc">$</span>prevision,</span>
+<span id="cb84-6"><a href="#cb84-6" aria-hidden="true" tabindex="-1"></a>                       model_ssm_complet_oos<span class="sc">$</span>prevision)</span>
+<span id="cb84-7"><a href="#cb84-7" aria-hidden="true" tabindex="-1"></a>full_prevs <span class="ot">&lt;-</span> <span class="fu">ts</span>(<span class="fu">rbind</span>(full_prevs,</span>
+<span id="cb84-8"><a href="#cb84-8" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">c</span>(prevs_lm, prevs_ssm)),</span>
+<span id="cb84-9"><a href="#cb84-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">start =</span> <span class="fu">start</span>(full_prevs),</span>
+<span id="cb84-10"><a href="#cb84-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">frequency =</span> <span class="fu">frequency</span>(full_prevs))</span>
+<span id="cb84-11"><a href="#cb84-11" aria-hidden="true" tabindex="-1"></a>data_forecasts <span class="ot">&lt;-</span> <span class="fu">ts.union</span>(manufacturing[,<span class="st">"prod_c5"</span>], full_prevs)</span>
+<span id="cb84-12"><a href="#cb84-12" aria-hidden="true" tabindex="-1"></a>data_forecasts <span class="ot">&lt;-</span> <span class="fu">window</span>(data_forecasts, <span class="at">start =</span> <span class="dv">2010</span>)</span>
+<span id="cb84-13"><a href="#cb84-13" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(data_forecasts) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"y"</span>, <span class="st">"lm"</span>, <span class="st">"SSM"</span>)</span>
+<span id="cb84-14"><a href="#cb84-14" aria-hidden="true" tabindex="-1"></a><span class="fu">dygraph</span>(data_forecasts) <span class="sc">%&gt;%</span> </span>
+<span id="cb84-15"><a href="#cb84-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dyRangeSelector</span>(<span class="at">dateWindow =</span> <span class="fu">c</span>(<span class="st">"2018-01-01"</span>, <span class="st">"2023-03-01"</span>))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="dygraphs html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d761d19787ad1f1c5442" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-d761d19787ad1f1c5442">{"x":{"attrs":{"labels":["quarter","y","lm","SSM"],"legend":"auto","retainDateWindow":false,"axes":{"x":{"pixelsPerLabel":60}},"showRangeSelector":true,"dateWindow":["2018-01-01T00:00:00.000Z","2023-03-01T00:00:00.000Z"],"rangeSelectorHeight":40,"rangeSelectorPlotFillColor":" #A7B1C4","rangeSelectorPlotStrokeColor":"#808FAB","interactionModel":"Dygraph.Interaction.defaultModel"},"scale":"quarterly","annotations":[],"shadings":[],"events":[],"format":"date","data":[["2010-01-01T00:00:00.000Z","2010-04-01T00:00:00.000Z","2010-07-01T00:00:00.000Z","2010-10-01T00:00:00.000Z","2011-01-01T00:00:00.000Z","2011-04-01T00:00:00.000Z","2011-07-01T00:00:00.000Z","2011-10-01T00:00:00.000Z","2012-01-01T00:00:00.000Z","2012-04-01T00:00:00.000Z","2012-07-01T00:00:00.000Z","2012-10-01T00:00:00.000Z","2013-01-01T00:00:00.000Z","2013-04-01T00:00:00.000Z","2013-07-01T00:00:00.000Z","2013-10-01T00:00:00.000Z","2014-01-01T00:00:00.000Z","2014-04-01T00:00:00.000Z","2014-07-01T00:00:00.000Z","2014-10-01T00:00:00.000Z","2015-01-01T00:00:00.000Z","2015-04-01T00:00:00.000Z","2015-07-01T00:00:00.000Z","2015-10-01T00:00:00.000Z","2016-01-01T00:00:00.000Z","2016-04-01T00:00:00.000Z","2016-07-01T00:00:00.000Z","2016-10-01T00:00:00.000Z","2017-01-01T00:00:00.000Z","2017-04-01T00:00:00.000Z","2017-07-01T00:00:00.000Z","2017-10-01T00:00:00.000Z","2018-01-01T00:00:00.000Z","2018-04-01T00:00:00.000Z","2018-07-01T00:00:00.000Z","2018-10-01T00:00:00.000Z","2019-01-01T00:00:00.000Z","2019-04-01T00:00:00.000Z","2019-07-01T00:00:00.000Z","2019-10-01T00:00:00.000Z","2020-01-01T00:00:00.000Z","2020-04-01T00:00:00.000Z","2020-07-01T00:00:00.000Z","2020-10-01T00:00:00.000Z","2021-01-01T00:00:00.000Z","2021-04-01T00:00:00.000Z","2021-07-01T00:00:00.000Z","2021-10-01T00:00:00.000Z","2022-01-01T00:00:00.000Z","2022-04-01T00:00:00.000Z","2022-07-01T00:00:00.000Z","2022-10-01T00:00:00.000Z","2023-01-01T00:00:00.000Z"],[-0.167783266259136,1.69005476811697,0.509685174055763,1.02110044270685,2.64191319590681,-0.567791159314213,-0.544266244339853,-0.818624262677459,-0.835556962597805,-1.0865971153298,0.591340833640719,-2.15206554747035,-0.0667548924309314,0.474627915152936,-0.726657724383273,0.528715104803079,0.399710151702859,-0.221177127956784,0.312667708892356,-0.331464725175035,0.291725497975426,0.468893620487054,0.274464389114071,0.779562751914264,-0.0882400128349059,-0.662958077650977,1.02301199672081,-0.117723703610573,0.810161345691718,1.08515516810825,0.854537696229252,1.28931692924346,-1.72138986292636,1.05696421980381,0.375199220825206,-0.348435897718624,0.648409405255879,0.247358758149097,-0.312547978856403,-0.707362955303026,-5.95847459504975,-18.6416116870877,24.2741503395746,3.89186669773947,0.280394795872585,-0.518957611005477,-0.54977177163672,-0.461241054975869,1.70018966711718,-0.302637750429946,-0.305796695603477,-0.38201388732837,null],[-0.285131012963285,0.294176444871434,0.146247272920124,0.530413103342053,0.951601422444633,0.143594259766169,-1.41780794439257,-0.718750967694256,-0.477083663136255,-1.36744384687437,-0.634723667928581,-1.16112441366732,-0.514199523951678,-0.255773413340787,-0.329456929063504,-0.243691034763245,-0.0481438332498072,-0.486726194331041,-0.130795751046643,-0.230152596682773,0.215249827142423,-0.214768757200362,0.196409184907548,-0.174700017956703,0.335988013579408,0.0471551844127069,-0.192671705032358,0.339071832509344,-0.173907760421184,0.946017270360565,0.687954969368935,0.912879271643145,-0.106673151745162,-0.26289088349506,0.162460214718729,-0.0272176597122662,-0.156897756149063,-0.654286861548352,-0.0669394169383846,-0.390798097393705,-1.0441787782346,-4.80121604914978,2.27540636803925,1.20692733593601,0.952730545373821,1.24903434276838,1.51117770869571,1.00807848098337,0.254368544829909,0.179734078916332,-0.585520209657327,-0.00122990449629057,null],[-0.168521202446689,0.457376951759377,0.821205159976189,0.505643732671853,1.75456372052681,-0.87233278028428,-2.2295398029819,-0.762499909279015,-1.19954572312388,-1.25876772356998,-0.0103391204775634,-1.87047955070037,0.395221446750683,0.669143785554234,-0.681735261448156,0.250797210449291,-0.831247569488232,0.0793693114196421,0.554268177828352,-0.595480221762142,0.865836832455889,0.033037451555268,0.0129694708627766,-0.165523295373188,1.19329925425909,-0.0124898481258164,0.117595474068913,-0.227253954720743,0.163016026959875,1.13264498311443,0.893472330305014,1.56747477491725,-0.25988589943692,0.78025881494476,0.0292815609190484,0.555755861105386,0.138917195224456,-0.337443610555407,-0.0581141006318268,0.58454237030369,0.302956172596338,-13.3470784672341,6.37518726718223,2.59578099806918,2.4986290269326,0.627553055280822,0.212736488856238,0.324364198195629,0.465183564767132,-0.292870578675512,-0.00639995641406244,-1.30215177373596,null]]},"evals":["attrs.interactionModel"],"jsHooks":[]}</script>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Notes de bas de page</h2>
+
+<ol>
+<li id="fn1"><p> L’avantage de <code>dynlm</code> par rapport à <code>lm</code> est qu’il permet de gérer directement la différenciation des variables sans avoir à créer de variable temporaire.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copié");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copié");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="AQLT/AteliertvCoef" data-repo-id="R_kgDOJHHw_w" data-category="Announcements" data-category-id="DIC_kwDOIepag84CSt5_" data-mapping="pathname" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="bottom" data-theme="light" data-lang="fr" crossorigin="anonymous" data-loading="lazy" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2023, Claire de Rosamel, Alain Quartier-la-Tente, Insee</div>   
+  </div>
+</footer>
+
+
+
+</body></html>
