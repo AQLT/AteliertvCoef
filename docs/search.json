@@ -81,7 +81,7 @@
     "href": "slides.html#régressions-locales-fa-brands-r-project-tvreg",
     "title": "Atelier D2E",
     "section": "Régressions locales :  tvreg",
-    "text": "Régressions locales :  tvreg\nHypothèse \\(\\beta_t = \\beta(z_t)\\) avec par défaut \\(z_t = t/T\\) et \\(\\beta()\\) localement constante (Nadaraya-Watson) ou localement linéaire.\n\nEstimation : \\[\n\\beta(z_t) = \\underset{\\theta_0}{\\argmin}\\sum_{j=1}^T\\left(y_{j}-x_j\\theta_0\\right)^2K_b(z_j-z_t)\n\\] Avec \\(K_b(x)=\\frac 1 b K(x/b)\\) une fonction de noyau pour pondérer les observations.\n\n\nRemarque :\n\nSi \\(b\\geq1\\) on utilise toutes les données pour chaque estimation.\n\nSi \\(b=20\\) le poids donné à toutes les données se rapproche de 1, estimation \\(\\simeq\\) à la régression linéaire"
+    "text": "Régressions locales :  tvreg\nHypothèse \\(\\beta_t = \\beta(z_t)\\) avec par défaut \\(z_t = t/T\\) et \\(\\beta()\\) localement constante (Nadaraya-Watson) ou localement linéaire.\n\nEstimation : \\[\n\\beta(z_t) = \\underset{\\theta_0}{\\argmin}\\sum_{j=1}^T\\left(y_{j}-x_j\\theta_0\\right)^2K_b(z_j-z_t)\n\\] Avec \\(K_b(x)=\\frac 1 b K(x/b)\\) une fonction de noyau pour pondérer les observations.\n\n\nRemarque :\n\nSi \\(b\\geq1\\) on utilise toutes les données pour chaque estimation.\n\nSi \\(b \\rightarrow 20\\) le poids associé à chaque donnée tend à devenir le même pour toutes, estimation \\(\\simeq\\) à la régression linéaire"
   },
   {
     "objectID": "slides.html#section-8",
