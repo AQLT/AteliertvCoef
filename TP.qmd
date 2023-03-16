@@ -23,6 +23,7 @@ Les packages suivants seront utilisés :
 
 ```{r}
 #| eval: false
+#| label: install
 packages_to_install <- c("dygraphs", "car", "dynlm")
 
 packages <- installed.packages()[,"Package"][! packages_to_install %in% installed.packages()[,"Package"]]
@@ -37,6 +38,7 @@ if ("tvCoef" %in% installed.packages()[,"Package"]) {
 ```
 
 Pour l'installation de tvCoef, voir le [manuel d'installation](manuel_installation.qmd).
+Si vous utiliser le <https://datalab.ssp.cloud.fr>, créer une instance en cliquant ici : [![Onyxia](https://img.shields.io/badge/Launch-Datalab-orange?logo=R)](https://datalab.sspcloud.fr/launcher/ide/rstudio?autoLaunch=true&service.image.custom.enabled=true&service.image.pullPolicy=%C2%ABAlways%C2%BB&service.image.custom.version=%C2%ABaqlt%2Fatelier-tvcoef%3Alatest%C2%BB)
 
 Pour ce TP nous utiliserons les données de la base `tvCoef::manufacturing`pour prévoir l'évolution trimestrielle de la production du secteur des autres industries manufacturières (C5, `prod_c5`) à partir de :
 
@@ -78,11 +80,12 @@ model_c5 <- dynlm(
 model_c5
 ```
 
-Les prévisions dans l'échantillon (*in sample*) peuvent être extrait avec les fonctions `fitted()` ou `predict()` et les prévisions en temps-réel (*out of sample*) avec la fonction `tvCoef::oos_prev()`.
+Les prévisions dans l'échantillon (*in sample*) peuvent être extraites avec les fonctions `fitted()` ou `predict()` et les prévisions en temps-réel (*out of sample*) avec la fonction `tvCoef::oos_prev()`.
 
 Pour évaluer la qualité en temps-réel, nous utiliserons les résidus à partir de 2000 :
 
 ```{r}
+#| label: oos-lm
 prev_oos_lm <- oos_prev(model_c5)
 res_lm_is <- residuals(model_c5)
 res_lm_oos <- prev_oos_lm$residuals
@@ -119,6 +122,7 @@ En utilisant notamment `oos_prev()`, comparer la qualité prédictive des modèl
 ```{r}
 #| warning: false
 #| message: false
+#| label: piece-reg
 reg_morceaux <- piece_reg(model_c5)
 # Ici une date de rupture
 # Si pas de rupture détectée, le modèle renvoyé est le modèle initial
@@ -134,6 +138,7 @@ Analysons maintenant les erreurs de prévision :
 
 ```{r}
 #| warning: false
+#| label: oos-piece-reg
 prev_oos_rm <- oos_prev(reg_morceaux)
 res_rm_is <- residuals(reg_morceaux$model)
 res_rm_oos <- prev_oos_rm$residuals
@@ -153,9 +158,10 @@ legend("topleft", legend = c("LM","Reg. par morceaux"),
        col= c("black", "red"), lty = 1)
 ```
 
-En analysant les prévisions à partir de 2010, les erreurs sont bien réduites :
+En analysant les prévisions à partir de 2010, les erreurs sont réduites par rapport à précédemment mais restent plus élevées que celles de la régression linéaire :
 
 ```{r}
+#| label: piece-reg-lm-oos
 apply(window(ts.union(res_lm_oos, res_rm_oos), start = 2010), 2, rmse)
 ```
 
@@ -172,6 +178,7 @@ Appliquer la fonction `tvCoef::hansen.test()` sur votre modèle et interpréter 
 ## Solution
 
 ```{r}
+#| label: hansen
 hansen.test(model_c5)
 ```
 Le test de Hansen conclut que seul l'acquis d'IPI évolue.
@@ -181,6 +188,7 @@ On peut également faire des tests de Fisher sur le modèle précédent pour tes
 Cela peut être fait avec la fonction `car::linearHypothesis()` :
 
 ```{r}
+#| label: linear-constant
 # on rejette H0 => non constance des coefficients
 car::linearHypothesis(reg_morceaux$model, "`(Intercept)_2008.5` = `(Intercept)_2019.75`")
 # on rejette H0 => non constance des coefficients
@@ -208,6 +216,7 @@ Ici nous allons fixer toutes les variables sauf les deux premières (constante +
 ```{r}
 #| warning: false
 #| message: false
+#| label: piece-reg-fixed
 
 reg_morceaux2 <- piece_reg(model_c5, fixed_var = c(3, 4, 5, 6))
 
@@ -256,6 +265,7 @@ Mais contrairement à `dynlm`, `tvLM` ne gère pas directement les variables en 
 ```{r}
 #| error: true
 #| warning: false
+#| label: tvlm
 library(tvReg)
 tvReg::tvLM(formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 + insee_oscd_c5_m2
   + diff(insee_tppre_c5_m3, 1) + diff(bdf_tuc_c5_m2, 1),
@@ -293,6 +303,7 @@ Ici toutes les coefficients sont variables alors que certains pourraient être f
 Pour fixer certaines variables, on pourrait faire une régression en deux étapes.
 
 ```{r}
+#| label: rmse-is-tvlm
 res_tvlm_is <- residuals(tvlm)
 rmse_tvlm <- c(IS = rmse(res_tvlm_is), OOS = NA)
 rbind(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm)
@@ -350,6 +361,7 @@ apply(window(ts.union(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_all_oos), st
 Fixons maintenant la fenêtre à la dernière valeur estimée :
 
 ```{r}
+#| label: rmse-tvlm-oos-fixed-bw
 prev_oos_tvlm_lastbw <- oos_prev(tvlm, end = end(data), frequency = frequency(data),fixed_bw = TRUE)
 res_tvlm_lastbw_oos <- prev_oos_tvlm_lastbw$residuals
 rmse_tvlm["OOS"] <- rmse(res_tvlm_lastbw_oos)
@@ -370,6 +382,7 @@ La fonction `rmse_prev()` permet de calculer les prévisions dans l'échantillon
 
 ```{r}
 #| warning: false
+#| label: rmse-prev
 comp_prev <- rmse_prev(model_c5, fixed_var = c(3, 4, 5, 6), fixed_bw = TRUE)
 comp_prev
 ```
@@ -392,6 +405,7 @@ Sept modèles différents sont estimés, dans l'ordre :
 
 On peut ensuite récupérer tous les résidus en temps réel :
 ```{r}
+#| label: rmse-prev-oos
 comp_prev_tr <- do.call(cbind, lapply(comp_prev$prevision, `[[`, "residuals"))
 apply(window(comp_prev_tr, start = 2010), 2, rmse)
 ```
@@ -439,6 +453,7 @@ La dernière colonne (`"noise"`) contient les résidus.
 La composante `smoothed_stdev` contient les écart-types associés aux différents coefficients, la dernière colonne s'interprète de manière plus complexe et ne sera pas détaillée ici.
 
 ```{r}
+#| label: ssm-lm
 mod_ssm <- ssm_lm(model_c5)
 summary(model_c5)
 tail(mod_ssm$smoothed_states, 3)
@@ -448,6 +463,7 @@ La composante `filtering_states` donne les estimations des coefficients en temps
 Ainsi, en estimant le modèle jusqu'en 2010T1, les coefficients obtenus sont ceux de la composante `filtering_states` de 2010T2\ :
 
 ```{r}
+#| label: ssm-filtering
 summary(dynlm(
   formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 + insee_oscd_c5_m2
   + diff(insee_tppre_c5_m3, 1) + diff(bdf_tuc_c5_m2, 1),
@@ -462,6 +478,7 @@ window(mod_ssm$filtering_states, start = 2010, end = c(2010,2))
 
 Estimer maintenant le modèle en utilisant les paramètres suivant :
 ```{r}
+#| label: ssmlm-var
 model_ssm <- ssm_lm(model_c5,
        var_intercept = 0.01, fixed_var_intercept = FALSE,
        var_variables = 0.01, fixed_var_variables = FALSE)
@@ -487,11 +504,13 @@ plot(model_ssm$smoothed_states[,-ncol(model_ssm$smoothed_states)])
 On peut également vérifier en regardant les variances $\sigma^2q_i$ :
 
 ```{r}
+#| label: ssm-variances
 model_ssm$parameters$parameters * model_ssm$parameters$scaling
 ```
 
 
 ```{r}
+#| label: all-oos
 res_ssm_is <- y - model_ssm$fitted[,"smoothed"]
 res_ssm_oos <- y - model_ssm$fitted[,"filtering"]
 rmse_ssm <- c(IS = rmse(res_ssm_is), OOS = rmse(res_ssm_oos))
@@ -505,6 +524,7 @@ Pour avoir une vraie estimation en temps-réel, il faudrait réestimer le modèl
 Pour que cette fonction marche, il faut parfois jouer sur les paramètres `var_intercept` et `var_variables`.
 
 ```{r}
+#| label: ssm-lm-oos
 model_ssm_oos <- ssm_lm_oos(model_c5,
        var_intercept = 0.01, fixed_var_intercept = FALSE,
        var_variables = 0.01, fixed_var_variables = FALSE)
@@ -519,6 +539,7 @@ On peut enfin faire un graphique avec toutes les prévisions, en utilisant par e
 
 ```{r}
 #| warning: false
+#| label: dygraphs-prevs
 library(dygraphs)
 prevs <- ts.intersect(y, y - res_lm_oos, y - res_rm2_oos, y - res_tvlm_lastbw_oos, y - res_ssm_oos)
 colnames(prevs) <- c("y", "lm", "Reg par morceaux", "Reg locale", "SSM")
@@ -558,7 +579,8 @@ Ce TP sera mis à jour le 28 mars avec les nouvelles données.
 On pourra utiliser le programme suivant pour créer les indicatrices :
 
 ```{r}
-#| eval: false
+#| label: ind-covid
+#| warning: false
 ind <- cbind(time(manufacturing) == 2020, time(manufacturing) == 2020.25, time(manufacturing) == 2020.5,
 time(manufacturing) == 2020.75)
 ind <- ts(apply(ind,2, as.numeric), start = start(manufacturing), frequency = 4)
@@ -574,11 +596,13 @@ colnames(data) <- c(colnames(manufacturing), colnames(ind))
 
 Estimation du modèle de régression linéaire :
 ```{r}
+#| eval: false
+#| label: ind-covid
+```
+
+```{r}
+#| label: est-lm-covid
 #| warning: false
-ind <- cbind(time(manufacturing) == 2020, time(manufacturing) == 2020.25, time(manufacturing) == 2020.5,
-time(manufacturing) == 2020.75)
-ind <- ts(apply(ind,2, as.numeric), start = start(manufacturing), frequency = 4)
-colnames(ind) <- sprintf("ind2020Q%i", 1:4)
 data <- ts.union(manufacturing, ind)
 colnames(data) <- c(colnames(manufacturing), colnames(ind))
 model_c5_complet <- dynlm(
@@ -593,11 +617,11 @@ prev_oos_lm_complet <- oos_prev(model_c5_complet)
 
 Estimation du modèle espace-état :
 ```{r}
-
+#| label: mod-final
 model_ssm_complet <- ssm_lm(model_c5_complet,
        var_intercept = 0.01, fixed_var_intercept = FALSE,
        var_variables = 0.01, fixed_var_variables = FALSE)
-# # Rmq : on pourrait également fixer à 0 les variances des coefficients associés aux indicatrices :
+# # Rmq : on pourrait également fixer à 0 les variances des coefficients associées aux indicatrices :
 # model_ssm_complet <- ssm_lm(model_c5_complet,
 #         var_intercept = 0.01, fixed_var_intercept = FALSE,
 #         var_variables = c(rep(0.01,5), rep(0, 4)), 
