@@ -38,7 +38,7 @@ if ("tvCoef" %in% installed.packages()[,"Package"]) {
 ```
 
 Pour l'installation de tvCoef, voir le [manuel d'installation](manuel_installation.qmd).
-Si vous utiliser le <https://datalab.ssp.cloud.fr>, créer une instance en cliquant ici : [![Onyxia](https://img.shields.io/badge/Launch-Datalab-orange?logo=R)](https://datalab.sspcloud.fr/launcher/ide/rstudio?autoLaunch=true&service.image.custom.enabled=true&service.image.pullPolicy=%C2%ABAlways%C2%BB&service.image.custom.version=%C2%ABaqlt%2Fatelier-tvcoef%3Alatest%C2%BB)
+Si vous utiliser le <https://datalab.ssp.cloud.fr>, créer une instance en cliquant ici : [![Onyxia](https://img.shields.io/badge/Launch-Datalab-orange?logo=R)](https://datalab.sspcloud.fr/launcher/ide/rstudio?autoLaunch=true&service.image.custom.enabled=true&service.image.pullPolicy=%C2%ABAlways%C2%BB&service.image.custom.version=%C2%ABaqlt%2Fatelier-tvcoef%3Alatest%C2%BB).
 
 Pour ce TP nous utiliserons les données de la base `tvCoef::manufacturing`pour prévoir l'évolution trimestrielle de la production du secteur des autres industries manufacturières (C5, `prod_c5`) à partir de :
 
@@ -476,7 +476,7 @@ window(mod_ssm$filtering_states, start = 2010, end = c(2010,2))
 ::: {.callout-note}
 ## Exercice
 
-Estimer maintenant le modèle en utilisant les paramètres suivant :
+Estimer maintenant le modèle en utilisant les paramètres suivants :
 ```{r}
 #| label: ssmlm-var
 model_ssm <- ssm_lm(model_c5,
@@ -562,7 +562,7 @@ L'objectif de cet exercice est d'estimer un nouveau modèle jusqu'en 2022T4 pour
 
 3. Estimer un nouveau modèle espace-état.
 
-4. Utiliser les variables exogènes du modèles jusqu'en 2023T1 (on peut pour cela appliquer la fonction `tvCoef::full_exogeneous_matrix()` sur le modèle `dynlm`) et la dernière ligne de la composante `"smoothed_states"` pour effectuer des prévisions sur 2023T1.
+4. Utiliser les variables exogènes du modèle jusqu'en 2023T1 (on peut pour cela appliquer la fonction `tvCoef::full_exogeneous_matrix()` sur le modèle `dynlm`) et la dernière ligne de la composante `"smoothed_states"` pour effectuer des prévisions sur 2023T1.
 
 :::: {.callout-important}
 ## Attention
