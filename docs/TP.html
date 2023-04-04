@@ -276,11 +276,11 @@ dynlm(formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 +
 
 Coefficients:
                (Intercept)            overhang_ipi1_c5  
-                 -15.94185                     0.12222  
+                 -6.383023                    0.102405  
             insee_bc_c5_m3            insee_oscd_c5_m2  
-                   0.14891                    -0.04347  
+                  0.061437                   -0.005596  
 diff(insee_tppre_c5_m3, 1)      diff(bdf_tuc_c5_m2, 1)  
-                   0.03711                     0.01846  </code></pre>
+                  0.039043                    0.397070  </code></pre>
 </div>
 </div>
 <p>Les prévisions dans l’échantillon (<em>in sample</em>) peuvent être extraites avec les fonctions <code>fitted()</code> ou <code>predict()</code> et les prévisions en temps-réel (<em>out of sample</em>) avec la fonction <code>tvCoef::oos_prev()</code>.</p>
@@ -293,7 +293,7 @@ diff(insee_tppre_c5_m3, 1)      diff(bdf_tuc_c5_m2, 1)
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>rmse_lm</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       IS       OOS 
-0.7656267 0.9298085 </code></pre>
+0.6990756 0.8494077 </code></pre>
 </div>
 </div>
 <p>Pour tracer les prévisions, on peut utiliser la fonction <code>plot()</code> :</p>
@@ -350,18 +350,18 @@ Call:
 dynlm::dynlm(formula = as.formula(formula), data = data2)
 
 Coefficients:
-                `(Intercept)_2008.5`               overhang_ipi1_c5_2008.5  
-                           -7.772228                              0.120109  
-               insee_bc_c5_m3_2008.5               insee_oscd_c5_m2_2008.5  
-                            0.073437                             -0.005285  
- `diff(insee_tppre_c5_m3, 1)_2008.5`       `diff(bdf_tuc_c5_m2, 1)_2008.5`  
-                            0.027550                              0.016886  
+               `(Intercept)_2008.75`              overhang_ipi1_c5_2008.75  
+                             1.70092                               0.10847  
+              insee_bc_c5_m3_2008.75              insee_oscd_c5_m2_2008.75  
+                            -0.01335                               0.03653  
+`diff(insee_tppre_c5_m3, 1)_2008.75`      `diff(bdf_tuc_c5_m2, 1)_2008.75`  
+                             0.04306                               0.48388  
                `(Intercept)_2019.75`              overhang_ipi1_c5_2019.75  
-                          -18.131296                              0.480903  
+                           -11.60377                               0.47441  
               insee_bc_c5_m3_2019.75              insee_oscd_c5_m2_2019.75  
-                            0.169182                             -0.052009  
+                             0.10798                              -0.03376  
 `diff(insee_tppre_c5_m3, 1)_2019.75`      `diff(bdf_tuc_c5_m2, 1)_2019.75`  
-                            0.054804                              0.021315  
+                             0.03414                               0.18874  
 
 
 $start
@@ -374,7 +374,7 @@ $frequency
 [1] 4
 
 $breakdates
-[1] 2008.5
+[1] 2008.75
 
 $tvlm
 [1] FALSE
@@ -386,7 +386,7 @@ attr(,"class")
 <p>L’objet précédent est une liste qui contient différentes informations, notamment :</p>
 <ul>
 <li><p><code>model</code> : le modèle <code>dynlm</code> estimé ;</p></li>
-<li><p><code>breakdates</code> : la date de rupture : 2008T3.</p></li>
+<li><p><code>breakdates</code> : la date de rupture : 2008T4.</p></li>
 </ul>
 <p>Analysons maintenant les erreurs de prévision :</p>
 <div class="cell">
@@ -401,8 +401,8 @@ attr(,"class")
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               IS       OOS
-rmse_lm 0.7656267 0.9298085
-rmse_rm 0.6008502 1.5042050</code></pre>
+rmse_lm 0.6990756 0.8494077
+rmse_rm 0.5731039 1.3826525</code></pre>
 </div>
 </div>
 <p>Elle sont ici réduites dans l’échantillon mais augmentent en temps réel ! En regardant plus précisément, cela vient d’erreurs élevées autour de la date de rupture car l’estimation n’est pas suffisamment robuste !</p>
@@ -420,7 +420,7 @@ rmse_rm 0.6008502 1.5042050</code></pre>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>res_lm_oos res_rm_oos 
- 0.7431644  0.9633194 </code></pre>
+ 0.7863127  1.1067406 </code></pre>
 </div>
 </div>
 </div>
@@ -457,14 +457,14 @@ Solution
 <pre><code>
 Variable                  L        Stat     Conclusion 
 ______________________________________________________________ 
-(Intercept)                  0.28297   0.47   FALSE   
-overhang_ipi1_c5             1.00779   0.47    TRUE   
-insee_bc_c5_m3               0.33875   0.47   FALSE   
-insee_oscd_c5_m2             0.07143   0.47   FALSE   
-diff(insee_tppre_c5_m3, 1)   0.33877   0.47   FALSE   
-diff(bdf_tuc_c5_m2, 1)       0.30556   0.47   FALSE   
-Variance                     0.28409   0.47   FALSE   
-Joint Lc                     1.92646   2.11    TRUE   
+(Intercept)                  0.2561   0.47   FALSE   
+overhang_ipi1_c5             0.8564   0.47    TRUE   
+insee_bc_c5_m3               0.2708   0.47   FALSE   
+insee_oscd_c5_m2             0.1508   0.47   FALSE   
+diff(insee_tppre_c5_m3, 1)   0.2568   0.47   FALSE   
+diff(bdf_tuc_c5_m2, 1)       0.1533   0.47   FALSE   
+Variance                     0.4562   0.47   FALSE   
+Joint Lc                     1.6516   2.11   FALSE   
 
 
 Lecture: True means reject H0 at level 5% </code></pre>
@@ -474,65 +474,65 @@ Lecture: True means reject H0 at level 5% </code></pre>
 <p>On peut également faire des tests de Fisher sur le modèle précédent pour tester si les coefficients sont égaux entre les sous-périodes. Cela peut être fait avec la fonction <code>car::linearHypothesis()</code> :</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># on rejette H0 =&gt; non constance des coefficients</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>car<span class="sc">::</span><span class="fu">linearHypothesis</span>(reg_morceaux<span class="sc">$</span>model, <span class="st">"`(Intercept)_2008.5` = `(Intercept)_2019.75`"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>car<span class="sc">::</span><span class="fu">linearHypothesis</span>(reg_morceaux<span class="sc">$</span>model, <span class="st">"`(Intercept)_2008.75` = `(Intercept)_2019.75`"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Linear hypothesis test
 
 Hypothesis:
-(Intercept)_2008.5` - Intercept)_2019.75` = 0
+(Intercept)_2008.75` - Intercept)_2019.75` = 0
 
 Model 1: restricted model
-Model 2: y ~ 0 + (`(Intercept)_2008.5` + overhang_ipi1_c5_2008.5 + insee_bc_c5_m3_2008.5 + 
-    insee_oscd_c5_m2_2008.5 + `diff(insee_tppre_c5_m3, 1)_2008.5` + 
-    `diff(bdf_tuc_c5_m2, 1)_2008.5` + `(Intercept)_2019.75` + 
+Model 2: y ~ 0 + (`(Intercept)_2008.75` + overhang_ipi1_c5_2008.75 + insee_bc_c5_m3_2008.75 + 
+    insee_oscd_c5_m2_2008.75 + `diff(insee_tppre_c5_m3, 1)_2008.75` + 
+    `diff(bdf_tuc_c5_m2, 1)_2008.75` + `(Intercept)_2019.75` + 
     overhang_ipi1_c5_2019.75 + insee_bc_c5_m3_2019.75 + insee_oscd_c5_m2_2019.75 + 
     `diff(insee_tppre_c5_m3, 1)_2019.75` + `diff(bdf_tuc_c5_m2, 1)_2019.75`)
 
   Res.Df    RSS Df Sum of Sq      F  Pr(&gt;F)  
-1     96 40.182                              
-2     95 38.629  1    1.5522 3.8174 0.05366 .
+1     96 37.058                              
+2     95 35.144  1    1.9145 5.1751 0.02516 *
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># on rejette H0 =&gt; non constance des coefficients</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>car<span class="sc">::</span><span class="fu">linearHypothesis</span>(reg_morceaux<span class="sc">$</span>model, <span class="st">"overhang_ipi1_c5_2019.75 = overhang_ipi1_c5_2008.5"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>car<span class="sc">::</span><span class="fu">linearHypothesis</span>(reg_morceaux<span class="sc">$</span>model, <span class="st">"overhang_ipi1_c5_2019.75 = overhang_ipi1_c5_2008.75"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Linear hypothesis test
 
 Hypothesis:
-- overhang_ipi1_c5_2008.5  + overhang_ipi1_c5_2019.75 = 0
+- overhang_ipi1_c5_2008.75  + overhang_ipi1_c5_2019.75 = 0
 
 Model 1: restricted model
-Model 2: y ~ 0 + (`(Intercept)_2008.5` + overhang_ipi1_c5_2008.5 + insee_bc_c5_m3_2008.5 + 
-    insee_oscd_c5_m2_2008.5 + `diff(insee_tppre_c5_m3, 1)_2008.5` + 
-    `diff(bdf_tuc_c5_m2, 1)_2008.5` + `(Intercept)_2019.75` + 
+Model 2: y ~ 0 + (`(Intercept)_2008.75` + overhang_ipi1_c5_2008.75 + insee_bc_c5_m3_2008.75 + 
+    insee_oscd_c5_m2_2008.75 + `diff(insee_tppre_c5_m3, 1)_2008.75` + 
+    `diff(bdf_tuc_c5_m2, 1)_2008.75` + `(Intercept)_2019.75` + 
     overhang_ipi1_c5_2019.75 + insee_bc_c5_m3_2019.75 + insee_oscd_c5_m2_2019.75 + 
     `diff(insee_tppre_c5_m3, 1)_2019.75` + `diff(bdf_tuc_c5_m2, 1)_2019.75`)
 
   Res.Df    RSS Df Sum of Sq      F    Pr(&gt;F)    
-1     96 48.734                                  
-2     95 38.629  1    10.105 24.851 2.781e-06 ***
+1     96 44.941                                  
+2     95 35.144  1    9.7974 26.484 1.429e-06 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># on ne rejette pas H0 =&gt; constance des coefficients</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>car<span class="sc">::</span><span class="fu">linearHypothesis</span>(reg_morceaux<span class="sc">$</span>model, <span class="st">"`diff(insee_tppre_c5_m3, 1)_2019.75` = `diff(insee_tppre_c5_m3, 1)_2008.5`"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>car<span class="sc">::</span><span class="fu">linearHypothesis</span>(reg_morceaux<span class="sc">$</span>model, <span class="st">"`diff(insee_tppre_c5_m3, 1)_2019.75` = `diff(insee_tppre_c5_m3, 1)_2008.75`"</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Linear hypothesis test
 
 Hypothesis:
-- diff(insee_tppre_c5_m3,_2008.5`  + diff(insee_tppre_c5_m3,_2019.75` = 0
+- diff(insee_tppre_c5_m3,_2008.75`  + diff(insee_tppre_c5_m3,_2019.75` = 0
 
 Model 1: restricted model
-Model 2: y ~ 0 + (`(Intercept)_2008.5` + overhang_ipi1_c5_2008.5 + insee_bc_c5_m3_2008.5 + 
-    insee_oscd_c5_m2_2008.5 + `diff(insee_tppre_c5_m3, 1)_2008.5` + 
-    `diff(bdf_tuc_c5_m2, 1)_2008.5` + `(Intercept)_2019.75` + 
+Model 2: y ~ 0 + (`(Intercept)_2008.75` + overhang_ipi1_c5_2008.75 + insee_bc_c5_m3_2008.75 + 
+    insee_oscd_c5_m2_2008.75 + `diff(insee_tppre_c5_m3, 1)_2008.75` + 
+    `diff(bdf_tuc_c5_m2, 1)_2008.75` + `(Intercept)_2019.75` + 
     overhang_ipi1_c5_2019.75 + insee_bc_c5_m3_2019.75 + insee_oscd_c5_m2_2019.75 + 
     `diff(insee_tppre_c5_m3, 1)_2019.75` + `diff(bdf_tuc_c5_m2, 1)_2019.75`)
 
   Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
-1     96 39.171                           
-2     95 38.629  1   0.54182 1.3325 0.2513</code></pre>
+1     96 35.201                           
+2     95 35.144  1  0.056906 0.1538 0.6958</code></pre>
 </div>
 </div>
 </div>
@@ -583,13 +583,13 @@ dynlm::dynlm(formula = as.formula(formula), data = data2)
 
 Coefficients:
               insee_bc_c5_m3              insee_oscd_c5_m2  
-                     0.12320                      -0.03110  
+                    0.042179                      0.005864  
 `diff(insee_tppre_c5_m3, 1)`      `diff(bdf_tuc_c5_m2, 1)`  
-                     0.03626                       0.01969  
-        `(Intercept)_2008.5`       overhang_ipi1_c5_2008.5  
-                   -13.07645                       0.09204  
+                    0.042554                      0.331692  
+       `(Intercept)_2008.75`      overhang_ipi1_c5_2008.75  
+                   -4.386765                      0.106947  
        `(Intercept)_2019.75`      overhang_ipi1_c5_2019.75  
-                   -13.10151                       0.52974  
+                   -4.152134                      0.443726  
 
 
 $start
@@ -602,7 +602,7 @@ $frequency
 [1] 4
 
 $breakdates
-[1] 2008.5
+[1] 2008.75
 
 $tvlm
 [1] FALSE
@@ -617,15 +617,15 @@ attr(,"class")
 <span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                IS       OOS
-rmse_lm  0.7656267 0.9298085
-rmse_rm  0.6008502 1.5042050
-rmse_rm2 0.6364012 1.4565471</code></pre>
+rmse_lm  0.6990756 0.8494077
+rmse_rm  0.5731039 1.3826525
+rmse_rm2 0.6003532 0.8747103</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Après 2010</span></span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos, res_rm2_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> res_lm_oos  res_rm_oos res_rm2_oos 
-  0.7431644   0.9633194   0.7018949 </code></pre>
+  0.7863127   1.1067406   0.7050171 </code></pre>
 </div>
 </div>
 <p>Cela permet d’améliorer la qualité de la prévision en temps-réel mais pas celle dans l’échantillon.</p>
@@ -694,7 +694,7 @@ Solution
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>tvlm <span class="ot">&lt;-</span> tvReg<span class="sc">::</span><span class="fu">tvLM</span>(<span class="at">formula =</span> prod_c5 <span class="sc">~</span> .,</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data =</span> <span class="fu">get_data</span>(model_c5))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Calculating regression bandwidth... bw =  0.3066338 </code></pre>
+<pre><code>Calculating regression bandwidth... bw =  0.4698719 </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>coefs_tvlm <span class="ot">&lt;-</span> <span class="fu">ts</span>(<span class="fu">coef</span>(tvlm), <span class="at">end =</span> <span class="fu">end</span>(data), <span class="at">frequency =</span> <span class="fu">frequency</span>(data))</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(coefs_tvlm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -709,10 +709,10 @@ Solution
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                 IS       OOS
-rmse_lm   0.7656267 0.9298085
-rmse_rm   0.6008502 1.5042050
-rmse_rm2  0.6364012 1.4565471
-rmse_tvlm 0.5601224        NA</code></pre>
+rmse_lm   0.6990756 0.8494077
+rmse_rm   0.5731039 1.3826525
+rmse_rm2  0.6003532 0.8747103
+rmse_tvlm 0.5971192        NA</code></pre>
 </div>
 </div>
 <p>Le RMSE dans l’échantillon est réduit.</p>
@@ -771,7 +771,6 @@ Calculating regression bandwidth... bw =  20
 Calculating regression bandwidth... bw =  20 
 Calculating regression bandwidth... bw =  20 
 Calculating regression bandwidth... bw =  20 
-Calculating regression bandwidth... bw =  0.7229482 
 Calculating regression bandwidth... bw =  20 
 Calculating regression bandwidth... bw =  20 
 Calculating regression bandwidth... bw =  20 
@@ -783,68 +782,69 @@ Calculating regression bandwidth... bw =  20
 Calculating regression bandwidth... bw =  20 
 Calculating regression bandwidth... bw =  20 
 Calculating regression bandwidth... bw =  20 
-Calculating regression bandwidth... bw =  3.84218 
-Calculating regression bandwidth... bw =  2.379419 
-Calculating regression bandwidth... bw =  1.471069 
-Calculating regression bandwidth... bw =  1.336507 
-Calculating regression bandwidth... bw =  2.187982 
-Calculating regression bandwidth... bw =  2.720982 
-Calculating regression bandwidth... bw =  1.861825 
-Calculating regression bandwidth... bw =  1.332401 
-Calculating regression bandwidth... bw =  1.423126 
-Calculating regression bandwidth... bw =  1.378801 
-Calculating regression bandwidth... bw =  1.383647 
-Calculating regression bandwidth... bw =  1.348802 
-Calculating regression bandwidth... bw =  1.319569 
-Calculating regression bandwidth... bw =  1.146523 
-Calculating regression bandwidth... bw =  1.095173 
-Calculating regression bandwidth... bw =  0.9674586 
-Calculating regression bandwidth... bw =  0.9737833 
-Calculating regression bandwidth... bw =  0.4515073 
-Calculating regression bandwidth... bw =  0.6010299 
-Calculating regression bandwidth... bw =  1.125076 
-Calculating regression bandwidth... bw =  0.7800465 
-Calculating regression bandwidth... bw =  0.3350958 
-Calculating regression bandwidth... bw =  0.3181148 
-Calculating regression bandwidth... bw =  0.3175687 
-Calculating regression bandwidth... bw =  0.3192663 
-Calculating regression bandwidth... bw =  0.3038067 
-Calculating regression bandwidth... bw =  0.3062916 
-Calculating regression bandwidth... bw =  0.321897 
-Calculating regression bandwidth... bw =  0.2823154 
-Calculating regression bandwidth... bw =  0.282671 
-Calculating regression bandwidth... bw =  0.2813243 
-Calculating regression bandwidth... bw =  0.2712527 
-Calculating regression bandwidth... bw =  0.2668975 
-Calculating regression bandwidth... bw =  0.2663408 
-Calculating regression bandwidth... bw =  0.2654891 
-Calculating regression bandwidth... bw =  0.2616418 
-Calculating regression bandwidth... bw =  0.256943 
-Calculating regression bandwidth... bw =  0.252477 
-Calculating regression bandwidth... bw =  0.256979 
-Calculating regression bandwidth... bw =  0.2529721 
-Calculating regression bandwidth... bw =  0.2465582 
-Calculating regression bandwidth... bw =  0.2405544 
-Calculating regression bandwidth... bw =  0.2476612 
-Calculating regression bandwidth... bw =  0.2447846 
-Calculating regression bandwidth... bw =  0.2402012 
-Calculating regression bandwidth... bw =  0.2380975 
-Calculating regression bandwidth... bw =  0.2325063 
-Calculating regression bandwidth... bw =  0.2455257 
-Calculating regression bandwidth... bw =  0.2563558 
-Calculating regression bandwidth... bw =  0.2392887 
-Calculating regression bandwidth... bw =  0.2319362 
-Calculating regression bandwidth... bw =  0.2385437 
-Calculating regression bandwidth... bw =  0.2172559 
-Calculating regression bandwidth... bw =  0.2134491 
-Calculating regression bandwidth... bw =  0.3141551 
-Calculating regression bandwidth... bw =  0.2627992 
-Calculating regression bandwidth... bw =  0.2459824 
-Calculating regression bandwidth... bw =  0.2756304 
-Calculating regression bandwidth... bw =  0.2683644 
-Calculating regression bandwidth... bw =  0.2585477 
-Calculating regression bandwidth... bw =  0.2563214 
-Calculating regression bandwidth... bw =  0.3066338 </code></pre>
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  20 
+Calculating regression bandwidth... bw =  1.419831 
+Calculating regression bandwidth... bw =  2.82952 
+Calculating regression bandwidth... bw =  1.223547 
+Calculating regression bandwidth... bw =  1.170575 
+Calculating regression bandwidth... bw =  1.15924 
+Calculating regression bandwidth... bw =  1.149263 
+Calculating regression bandwidth... bw =  1.042411 
+Calculating regression bandwidth... bw =  0.9797272 
+Calculating regression bandwidth... bw =  0.4014617 
+Calculating regression bandwidth... bw =  0.8781985 
+Calculating regression bandwidth... bw =  0.4896312 
+Calculating regression bandwidth... bw =  0.491814 
+Calculating regression bandwidth... bw =  0.504626 
+Calculating regression bandwidth... bw =  0.4866928 
+Calculating regression bandwidth... bw =  0.3382399 
+Calculating regression bandwidth... bw =  0.4753745 
+Calculating regression bandwidth... bw =  0.4747202 
+Calculating regression bandwidth... bw =  0.478007 
+Calculating regression bandwidth... bw =  0.4662297 
+Calculating regression bandwidth... bw =  0.4636153 
+Calculating regression bandwidth... bw =  0.7847365 
+Calculating regression bandwidth... bw =  0.7712849 
+Calculating regression bandwidth... bw =  0.4601159 
+Calculating regression bandwidth... bw =  0.4618806 
+Calculating regression bandwidth... bw =  0.4630616 
+Calculating regression bandwidth... bw =  0.4480051 
+Calculating regression bandwidth... bw =  0.4333001 
+Calculating regression bandwidth... bw =  0.4067395 
+Calculating regression bandwidth... bw =  0.7120287 
+Calculating regression bandwidth... bw =  0.7082321 
+Calculating regression bandwidth... bw =  0.3906645 
+Calculating regression bandwidth... bw =  0.3970553 
+Calculating regression bandwidth... bw =  0.3421958 
+Calculating regression bandwidth... bw =  0.3365896 
+Calculating regression bandwidth... bw =  0.329112 
+Calculating regression bandwidth... bw =  0.3323843 
+Calculating regression bandwidth... bw =  0.649492 
+Calculating regression bandwidth... bw =  0.4963082 
+Calculating regression bandwidth... bw =  0.552225 
+Calculating regression bandwidth... bw =  0.6002736 
+Calculating regression bandwidth... bw =  0.5783915 
+Calculating regression bandwidth... bw =  0.4433933 
+Calculating regression bandwidth... bw =  0.4365778 
+Calculating regression bandwidth... bw =  0.4698719 </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>all_bw <span class="ot">&lt;-</span> <span class="fu">ts</span>(<span class="fu">sapply</span>(prev_oos_tvlm_all<span class="sc">$</span>model, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"bw"</span>),</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">end =</span> <span class="fu">end</span>(prev_oos_tvlm_all<span class="sc">$</span>prevision),</span>
@@ -858,16 +858,16 @@ Calculating regression bandwidth... bw =  0.3066338 </code></pre>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                 IS       OOS
-rmse_lm   0.7656267 0.9298085
-rmse_rm   0.6008502 1.5042050
-rmse_rm2  0.6364012 1.4565471
-rmse_tvlm 0.5601224 0.9953914</code></pre>
+rmse_lm   0.6990756 0.8494077
+rmse_rm   0.5731039 1.3826525
+rmse_rm2  0.6003532 0.8747103
+rmse_tvlm 0.5971192 0.8595945</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Après 2010</span></span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_all_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      res_lm_oos       res_rm_oos      res_rm2_oos res_tvlm_all_oos 
-       0.7431644        0.9633194        0.7018949        0.8571885 </code></pre>
+       0.7863127        1.1067406        0.7050171        0.8075138 </code></pre>
 </div>
 </div>
 </div>
@@ -890,18 +890,18 @@ Actualisation des coefficients uniquement
 <span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                 IS       OOS
-rmse_lm   0.7656267 0.9298085
-rmse_rm   0.6008502 1.5042050
-rmse_rm2  0.6364012 1.4565471
-rmse_tvlm 0.5601224 1.1195514</code></pre>
+rmse_lm   0.6990756 0.8494077
+rmse_rm   0.5731039 1.3826525
+rmse_rm2  0.6003532 0.8747103
+rmse_tvlm 0.5971192 0.9799976</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Après 2010</span></span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_all_oos, res_tvlm_lastbw_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>         res_lm_oos          res_rm_oos         res_rm2_oos    res_tvlm_all_oos 
-          0.7431644           0.9633194           0.7018949           0.8571885 
+          0.7863127           1.1067406           0.7050171           0.8075138 
 res_tvlm_lastbw_oos 
-          0.7904943 </code></pre>
+          0.7231632 </code></pre>
 </div>
 </div>
 <p>Le RMSE en temps-réel est réduit par rapport à précédemment mais il reste plus élevé qu’avec la régression linéaire.</p>
@@ -924,19 +924,19 @@ Remarque
 <div class="cell">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>comp_prev <span class="ot">&lt;-</span> <span class="fu">rmse_prev</span>(model_c5, <span class="at">fixed_var =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>), <span class="at">fixed_bw =</span> <span class="cn">TRUE</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Calculating regression bandwidth... bw =  0.3066338 
-Calculating regression bandwidth... bw =  0.2701166 </code></pre>
+<pre><code>Calculating regression bandwidth... bw =  0.4698719 
+Calculating regression bandwidth... bw =  0.3501963 </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>comp_prev</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                       RMSE_in_sample RMSE_out_of_sample
-lm                          0.7656267          0.9298085
-piece_lm                    0.6008502          1.5042050
-piece_lm fixed coeff        0.5043489          1.4565471
-TvLM                        0.5601224          1.1195514
-piece_tvlm                  0.6364012          1.6177417
-piece_tvlm fixed coeff      0.5127197          2.6673561
-TvLM fixed coeff            0.6509789          0.8886024</code></pre>
+lm                          0.6990756          0.8494077
+piece_lm                    0.5731039          1.3826525
+piece_lm fixed coeff        0.6003532          0.8747103
+TvLM                        0.5971192          0.9799976
+piece_tvlm                  0.5354897          1.4605933
+piece_tvlm fixed coeff      0.5470547          1.0154322
+TvLM fixed coeff            0.6254196          0.8574867</code></pre>
 </div>
 </div>
 <p>Sept modèles différents sont estimés, dans l’ordre :</p>
@@ -955,11 +955,11 @@ TvLM fixed coeff            0.6509789          0.8886024</code></pre>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(comp_prev_tr, <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>             prev_lm        prev_piece_lm   prev_piece_lm_fixe 
-           0.7431644            0.9633194            0.7018949 
+           0.7863127            1.1067406            0.7050171 
            prev_tvlm      prev_piece_tvlm prev_piece_tvlm_fixe 
-           0.7904943            0.9564709            0.7897816 
+           0.7231632            1.0894378            0.7072981 
       prev_tvlm_fixe 
-           0.6568764 </code></pre>
+           0.7246941 </code></pre>
 </div>
 </div>
 </div>
@@ -1024,45 +1024,45 @@ dynlm(formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 +
     1), data = data)
 
 Residuals:
-     Min       1Q   Median       3Q      Max 
--2.89722 -0.42523 -0.01178  0.49598  1.70036 
+    Min      1Q  Median      3Q     Max 
+-2.3241 -0.4566  0.0140  0.4495  1.6115 
 
 Coefficients:
-                             Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)                -15.941850   2.969369  -5.369 5.08e-07 ***
-overhang_ipi1_c5             0.122222   0.024494   4.990 2.52e-06 ***
-insee_bc_c5_m3               0.148905   0.026959   5.523 2.59e-07 ***
-insee_oscd_c5_m2            -0.043472   0.014544  -2.989  0.00351 ** 
-diff(insee_tppre_c5_m3, 1)   0.037110   0.014126   2.627  0.00996 ** 
-diff(bdf_tuc_c5_m2, 1)       0.018458   0.008287   2.227  0.02814 *  
+                            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)                -6.383023   3.213333  -1.986  0.04970 *  
+overhang_ipi1_c5            0.102405   0.022681   4.515 1.72e-05 ***
+insee_bc_c5_m3              0.061437   0.029218   2.103  0.03797 *  
+insee_oscd_c5_m2           -0.005596   0.015019  -0.373  0.71021    
+diff(insee_tppre_c5_m3, 1)  0.039043   0.012029   3.246  0.00159 ** 
+diff(bdf_tuc_c5_m2, 1)      0.397070   0.077580   5.118 1.48e-06 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 0.788 on 101 degrees of freedom
-Multiple R-squared:  0.6587,    Adjusted R-squared:  0.6418 
-F-statistic: 38.99 on 5 and 101 DF,  p-value: &lt; 2.2e-16</code></pre>
+Residual standard error: 0.7195 on 101 degrees of freedom
+Multiple R-squared:  0.7155,    Adjusted R-squared:  0.7014 
+F-statistic: 50.79 on 5 and 101 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(mod_ssm<span class="sc">$</span>smoothed_states, <span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       (Intercept) overhang_ipi1_c5 insee_bc_c5_m3 insee_oscd_c5_m2
-[105,]   -15.94185        0.1222215      0.1489051      -0.04347231
-[106,]   -15.94185        0.1222215      0.1489051      -0.04347231
-[107,]   -15.94185        0.1222215      0.1489051      -0.04347231
+[105,]   -6.383023        0.1024052     0.06143715     -0.005596399
+[106,]   -6.383023        0.1024052     0.06143715     -0.005596399
+[107,]   -6.383023        0.1024052     0.06143715     -0.005596399
        diff(insee_tppre_c5_m3, 1) diff(bdf_tuc_c5_m2, 1)      noise
-[105,]                 0.03710989             0.01845755  0.8987397
-[106,]                 0.03710989             0.01845755 -0.2066754
-[107,]                 0.03710989             0.01845755 -0.2024679</code></pre>
+[105,]                 0.03904254              0.3970705  0.5785851
+[106,]                 0.03904254              0.3970705  0.1141372
+[107,]                 0.03904254              0.3970705 -0.6226152</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(mod_ssm<span class="sc">$</span>smoothed_stdev, <span class="dv">3</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       (Intercept) overhang_ipi1_c5 insee_bc_c5_m3 insee_oscd_c5_m2
-[105,]    2.969369       0.02449432     0.02695896       0.01454367
-[106,]    2.969369       0.02449432     0.02695896       0.01454367
-[107,]    2.969369       0.02449432     0.02695896       0.01454367
+[105,]    3.213333       0.02268142     0.02921753       0.01501868
+[106,]    3.213333       0.02268142     0.02921753       0.01501868
+[107,]    3.213333       0.02268142     0.02921753       0.01501868
        diff(insee_tppre_c5_m3, 1) diff(bdf_tuc_c5_m2, 1)     noise
-[105,]                 0.01412646            0.008286736 0.1531623
-[106,]                 0.01412646            0.008286736 0.1278911
-[107,]                 0.01412646            0.008286736 0.1491448</code></pre>
+[105,]                 0.01202881             0.07757954 0.1554965
+[106,]                 0.01202881             0.07757954 0.1367629
+[107,]                 0.01202881             0.07757954 0.1460395</code></pre>
 </div>
 </div>
 <p>La composante <code>filtering_states</code> donne les estimations des coefficients en temps réel : la valeur à la date <span class="math inline">\(t\)</span> correspond aux estimations des coefficients en utilisant les données jusqu’en <span class="math inline">\(t-1\)</span>. Ainsi, en estimant le modèle jusqu’en 2010T1, les coefficients obtenus sont ceux de la composante <code>filtering_states</code> de 2010T2&nbsp;:</p>
@@ -1084,31 +1084,31 @@ dynlm(formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 +
 
 Residuals:
      Min       1Q   Median       3Q      Max 
--2.74106 -0.41709  0.00975  0.42044  1.77480 
+-1.93741 -0.36837 -0.02174  0.41270  1.50865 
 
 Coefficients:
                             Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)                -12.67832    4.07290  -3.113 0.002802 ** 
-overhang_ipi1_c5             0.13517    0.03481   3.883 0.000253 ***
-insee_bc_c5_m3               0.11776    0.03758   3.134 0.002635 ** 
-insee_oscd_c5_m2            -0.02609    0.02003  -1.302 0.197606    
-diff(insee_tppre_c5_m3, 1)   0.04778    0.01753   2.726 0.008329 ** 
-diff(bdf_tuc_c5_m2, 1)       0.02106    0.01007   2.091 0.040603 *  
+(Intercept)                 0.687568   4.010977   0.171 0.864451    
+overhang_ipi1_c5            0.096558   0.029839   3.236 0.001947 ** 
+insee_bc_c5_m3             -0.003804   0.036838  -0.103 0.918081    
+insee_oscd_c5_m2            0.027262   0.018837   1.447 0.152869    
+diff(insee_tppre_c5_m3, 1)  0.047953   0.013331   3.597 0.000639 ***
+diff(bdf_tuc_c5_m2, 1)      0.595962   0.104419   5.707 3.46e-07 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 0.822 on 62 degrees of freedom
-Multiple R-squared:  0.7234,    Adjusted R-squared:  0.7011 
-F-statistic: 32.43 on 5 and 62 DF,  p-value: 4.302e-16</code></pre>
+Residual standard error: 0.6887 on 62 degrees of freedom
+Multiple R-squared:  0.8058,    Adjusted R-squared:  0.7902 
+F-statistic: 51.46 on 5 and 62 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">window</span>(mod_ssm<span class="sc">$</span>filtering_states, <span class="at">start =</span> <span class="dv">2010</span>, <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2010</span>,<span class="dv">2</span>))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        (Intercept) overhang_ipi1_c5 insee_bc_c5_m3 insee_oscd_c5_m2
-2010 Q1   -12.93133        0.1338363      0.1201360      -0.02742855
-2010 Q2   -12.67832        0.1351715      0.1177635      -0.02609094
+2010 Q1   0.4262027       0.09515354   -0.001352874       0.02587391
+2010 Q2   0.6875678       0.09655775   -0.003804293       0.02726163
         diff(insee_tppre_c5_m3, 1) diff(bdf_tuc_c5_m2, 1) noise
-2010 Q1                 0.04742629             0.02107594     0
-2010 Q2                 0.04777549             0.02106144     0</code></pre>
+2010 Q1                 0.04759521              0.5960833     0
+2010 Q2                 0.04795263              0.5959618     0</code></pre>
 </div>
 </div>
 </div>
@@ -1158,13 +1158,13 @@ Solution
 <div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>model_ssm<span class="sc">$</span>parameters<span class="sc">$</span>parameters <span class="sc">*</span> model_ssm<span class="sc">$</span>parameters<span class="sc">$</span>scaling</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               (Intercept).var           overhang_ipi1_c5.var 
-                  0.000000e+00                   6.770260e-04 
+                  1.870276e-03                   3.863439e-04 
             insee_bc_c5_m3.var           insee_oscd_c5_m2.var 
-                  4.348269e-07                   0.000000e+00 
+                  0.000000e+00                   1.097830e-06 
 diff(insee_tppre_c5_m3, 1).var     diff(bdf_tuc_c5_m2, 1).var 
-                  9.975859e-05                   2.956853e-05 
+                  0.000000e+00                   3.462322e-03 
                      noise.var 
-                  3.451667e-01 </code></pre>
+                  3.548244e-01 </code></pre>
 </div>
 </div>
 <div class="cell">
@@ -1174,44 +1174,44 @@ diff(insee_tppre_c5_m3, 1).var     diff(bdf_tuc_c5_m2, 1).var
 <span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm, rmse_ssm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                 IS       OOS
-rmse_lm   0.7656267 0.9298085
-rmse_rm   0.6008502 1.5042050
-rmse_rm2  0.6364012 1.4565471
-rmse_tvlm 0.5601224 1.1195514
-rmse_ssm  0.5165990 0.7938357</code></pre>
+rmse_lm   0.6990756 0.8494077
+rmse_rm   0.5731039 1.3826525
+rmse_rm2  0.6003532 0.8747103
+rmse_tvlm 0.5971192 0.9799976
+rmse_ssm  0.5422771 0.7441522</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Après 2010</span></span>
 <span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_lastbw_oos, res_ssm_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>         res_lm_oos          res_rm_oos         res_rm2_oos res_tvlm_lastbw_oos 
-          0.7431644           0.9633194           0.7018949           0.7904943 
+          0.7863127           1.1067406           0.7050171           0.7231632 
         res_ssm_oos 
-          0.7005741 </code></pre>
+          0.6863295 </code></pre>
 </div>
 </div>
 <p>En réalité, la composante <em>filtering</em> ne correspond pas exactement à de l’estimation en temps-réel car certains paramètres ne sont pas estimés de manière dynamique. Pour avoir une vraie estimation en temps-réel, il faudrait réestimer le modèle à chaque date : on peut pour cela utiliser la fonction <code>ssm_lm_oos()</code>. Pour que cette fonction marche, il faut parfois jouer sur les paramètres <code>var_intercept</code> et <code>var_variables</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>model_ssm_oos <span class="ot">&lt;-</span> <span class="fu">ssm_lm_oos</span>(model_c5,</span>
-<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_intercept =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_intercept =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_variables =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_variables =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_intercept =</span> <span class="fl">0.001</span>, <span class="at">fixed_var_intercept =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_variables =</span> <span class="fl">0.001</span>, <span class="at">fixed_var_variables =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>res_ssm_oos <span class="ot">&lt;-</span> y <span class="sc">-</span> model_ssm_oos<span class="sc">$</span>prevision</span>
 <span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a>rmse_ssm <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">IS =</span> <span class="fu">rmse</span>(res_ssm_is), <span class="at">OOS =</span> <span class="fu">rmse</span>(res_ssm_oos))</span>
 <span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(rmse_lm, rmse_rm, rmse_rm2, rmse_tvlm, rmse_ssm)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                 IS       OOS
-rmse_lm   0.7656267 0.9298085
-rmse_rm   0.6008502 1.5042050
-rmse_rm2  0.6364012 1.4565471
-rmse_tvlm 0.5601224 1.1195514
-rmse_ssm  0.5165990 0.7576956</code></pre>
+rmse_lm   0.6990756 0.8494077
+rmse_rm   0.5731039 1.3826525
+rmse_rm2  0.6003532 0.8747103
+rmse_tvlm 0.5971192 0.9799976
+rmse_ssm  0.5422771 0.7337112</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(<span class="fu">window</span>(<span class="fu">ts.union</span>(res_lm_oos, res_rm_oos, res_rm2_oos, res_tvlm_lastbw_oos, res_ssm_oos), <span class="at">start =</span> <span class="dv">2010</span>), <span class="dv">2</span>, rmse)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>         res_lm_oos          res_rm_oos         res_rm2_oos res_tvlm_lastbw_oos 
-          0.7431644           0.9633194           0.7018949           0.7904943 
+          0.7863127           1.1067406           0.7050171           0.7231632 
         res_ssm_oos 
-          0.6838548 </code></pre>
+          0.6571734 </code></pre>
 </div>
 </div>
 <p>On peut enfin faire un graphique avec toutes les prévisions, en utilisant par exemple le package <code>dygraphs</code> :</p>
@@ -1223,8 +1223,8 @@ rmse_ssm  0.5165990 0.7576956</code></pre>
 <span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dyRangeSelector</span>(<span class="at">dateWindow =</span> <span class="fu">c</span>(<span class="st">"2010-01-01"</span>, <span class="st">"2019-12-01"</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dyOptions</span>(<span class="at">colors =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"red"</span>, <span class="st">"green"</span>, <span class="st">"blue"</span>, <span class="st">"purple"</span>))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="dygraphs html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-2711bcba52cdf5b549dd" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-2711bcba52cdf5b549dd">{"x":{"attrs":{"labels":["quarter","y","lm","Reg par morceaux","Reg locale","SSM"],"legend":"auto","retainDateWindow":false,"axes":{"x":{"pixelsPerLabel":60,"drawAxis":true},"y":{"drawAxis":true}},"showRangeSelector":true,"dateWindow":["2010-01-01T00:00:00.000Z","2019-12-01T00:00:00.000Z"],"rangeSelectorHeight":40,"rangeSelectorPlotFillColor":" #A7B1C4","rangeSelectorPlotStrokeColor":"#808FAB","interactionModel":"Dygraph.Interaction.defaultModel","stackedGraph":false,"fillGraph":false,"fillAlpha":0.15,"stepPlot":false,"drawPoints":false,"pointSize":1,"drawGapEdgePoints":false,"connectSeparatedPoints":false,"strokeWidth":1,"strokeBorderColor":"white","colors":["black","red","green","blue","purple"],"colorValue":0.5,"colorSaturation":1,"includeZero":false,"drawAxesAtZero":false,"logscale":false,"axisTickSize":3,"axisLineColor":"black","axisLineWidth":0.3,"axisLabelColor":"black","axisLabelFontSize":14,"axisLabelWidth":60,"drawGrid":true,"gridLineWidth":0.3,"rightGap":5,"digitsAfterDecimal":2,"labelsKMB":false,"labelsKMG2":false,"labelsUTC":false,"maxNumberWidth":6,"animatedZooms":false,"mobileDisableYTouch":true,"disableZoom":false},"scale":"quarterly","annotations":[],"shadings":[],"events":[],"format":"date","data":[["2000-04-01T00:00:00.000Z","2000-07-01T00:00:00.000Z","2000-10-01T00:00:00.000Z","2001-01-01T00:00:00.000Z","2001-04-01T00:00:00.000Z","2001-07-01T00:00:00.000Z","2001-10-01T00:00:00.000Z","2002-01-01T00:00:00.000Z","2002-04-01T00:00:00.000Z","2002-07-01T00:00:00.000Z","2002-10-01T00:00:00.000Z","2003-01-01T00:00:00.000Z","2003-04-01T00:00:00.000Z","2003-07-01T00:00:00.000Z","2003-10-01T00:00:00.000Z","2004-01-01T00:00:00.000Z","2004-04-01T00:00:00.000Z","2004-07-01T00:00:00.000Z","2004-10-01T00:00:00.000Z","2005-01-01T00:00:00.000Z","2005-04-01T00:00:00.000Z","2005-07-01T00:00:00.000Z","2005-10-01T00:00:00.000Z","2006-01-01T00:00:00.000Z","2006-04-01T00:00:00.000Z","2006-07-01T00:00:00.000Z","2006-10-01T00:00:00.000Z","2007-01-01T00:00:00.000Z","2007-04-01T00:00:00.000Z","2007-07-01T00:00:00.000Z","2007-10-01T00:00:00.000Z","2008-01-01T00:00:00.000Z","2008-04-01T00:00:00.000Z","2008-07-01T00:00:00.000Z","2008-10-01T00:00:00.000Z","2009-01-01T00:00:00.000Z","2009-04-01T00:00:00.000Z","2009-07-01T00:00:00.000Z","2009-10-01T00:00:00.000Z","2010-01-01T00:00:00.000Z","2010-04-01T00:00:00.000Z","2010-07-01T00:00:00.000Z","2010-10-01T00:00:00.000Z","2011-01-01T00:00:00.000Z","2011-04-01T00:00:00.000Z","2011-07-01T00:00:00.000Z","2011-10-01T00:00:00.000Z","2012-01-01T00:00:00.000Z","2012-04-01T00:00:00.000Z","2012-07-01T00:00:00.000Z","2012-10-01T00:00:00.000Z","2013-01-01T00:00:00.000Z","2013-04-01T00:00:00.000Z","2013-07-01T00:00:00.000Z","2013-10-01T00:00:00.000Z","2014-01-01T00:00:00.000Z","2014-04-01T00:00:00.000Z","2014-07-01T00:00:00.000Z","2014-10-01T00:00:00.000Z","2015-01-01T00:00:00.000Z","2015-04-01T00:00:00.000Z","2015-07-01T00:00:00.000Z","2015-10-01T00:00:00.000Z","2016-01-01T00:00:00.000Z","2016-04-01T00:00:00.000Z","2016-07-01T00:00:00.000Z","2016-10-01T00:00:00.000Z","2017-01-01T00:00:00.000Z","2017-04-01T00:00:00.000Z","2017-07-01T00:00:00.000Z","2017-10-01T00:00:00.000Z","2018-01-01T00:00:00.000Z","2018-04-01T00:00:00.000Z","2018-07-01T00:00:00.000Z","2018-10-01T00:00:00.000Z","2019-01-01T00:00:00.000Z","2019-04-01T00:00:00.000Z","2019-07-01T00:00:00.000Z","2019-10-01T00:00:00.000Z"],[1.41586211509732,0.774997801424671,1.58934473618186,0.155696338451627,-0.592870544090052,0.226483466706928,-2.11982955279129,0.963039511004604,-0.102354145342887,-0.235437739797695,-0.872956909361067,-0.301998258550185,-1.04692941241501,0.384323188988689,0.0957129501847565,1.14523338299717,-0.213261806349485,-0.565139797739445,0.270327162340323,0.480636428926573,-0.30899494171982,0.956330866212962,0.882809256386174,0.233933329001235,1.80334954078876,-0.00742949935788051,1.26204729758417,0.271485623840428,0.560317792180642,0.515613954842187,-0.216150250279235,0.916223583429199,-2.14857189807635,-1.05589084229861,-5.8173949018235,-6.42225601171369,-0.176931502232702,1.78330278769172,0.964283598886451,-0.167783266259136,1.69005476811697,0.509685174055763,1.02110044270685,2.64191319590681,-0.567791159314213,-0.544266244339853,-0.818624262677459,-0.835556962597805,-1.0865971153298,0.591340833640719,-2.15206554747035,-0.0667548924309314,0.474627915152936,-0.726657724383273,0.528715104803079,0.399710151702859,-0.221177127956784,0.312667708892356,-0.331464725175035,0.291725497975426,0.468893620487054,0.274464389114071,0.779562751914264,-0.0882400128349059,-0.662958077650977,1.02301199672081,-0.117723703610573,0.810161345691718,1.08515516810825,0.854537696229252,1.28931692924346,-1.72138986292636,1.05696421980381,0.375199220825206,-0.348435897718624,0.648409405255879,0.247358758149097,-0.312547978856403,-0.707362955303026],[1.94755141898527,1.73422528752702,1.37616471032235,0.254996276690519,-0.246677138937018,-1.09793050571945,-0.492578216193497,0.431087825025634,0.772219054049658,-0.663618810391756,-0.330645671389756,-0.791122488118662,-0.745953604667876,-0.0359228885525847,0.200433712061047,0.224438712729141,0.185503148704833,0.780686122098162,0.478004919784415,-0.115981918951176,-0.292201099777837,-0.17467232516241,0.541615678207942,0.433367068567272,0.221407239589946,0.440042263357301,0.779506963647463,0.591942200995068,0.56389272622375,0.592604832656598,0.77555342400597,0.639021203498906,-0.690137011727574,-1.07333628721344,-3.07537399824855,-3.48142903772387,-1.74917648818361,-0.54782416475963,-0.886811714239244,-0.0222237033869914,0.405931928280361,0.296636765454698,0.713994967444365,0.977973468543658,0.388084550864051,-1.50952136335872,-0.657878644332294,-0.45042661988344,-1.3978542711124,-0.584376031749234,-1.1173891308148,-0.455285702537204,-0.222835632630649,-0.365435439691972,-0.141803716121738,0.0689362418957251,-0.482696709351492,-0.123201124421287,-0.209338546104338,0.319218155602497,-0.191620640963533,0.26127619475721,-0.0825543149146388,0.374824974364394,0.0969045657585648,-0.203278424875786,0.485605901242028,-0.148250018675063,0.962296779133616,0.684495648208485,0.960796206130379,-0.0966784231119773,-0.380260087783288,0.171534693606004,-0.0658474155172408,-0.161284206178646,-0.679809763824402,-0.095457383359609,-0.497373319917707],[1.94755141898527,1.73422528752702,1.37616471032235,0.254996276690526,-0.24667713893702,-1.09793050571946,-0.4925782161935,0.431087825025629,0.772219054049656,-0.663618810391756,-0.330645671389759,-0.791122488118663,-0.745953604667882,-0.0359228885525835,0.200433712061047,0.224438712729141,0.185503148704833,0.780686122098157,0.478004919784416,-0.115981918951176,-0.29220109977784,-0.174672325162411,0.541615678207939,0.433367068567272,0.221407239589947,0.440042263357302,0.779506963647462,0.591942200995062,0.563892726223751,0.5926048326566,0.775553424005967,0.639021203498907,-0.690137011727572,-1.07333628721344,4.78869923143843,-5.19926167882638,-3.81167188318731,0.573120113383451,0.238806663258004,0.277655041353571,1.44681050671245,2.04827200504972,0.686808303485731,3.07077603910271,-0.777380094937548,-1.33453061311186,-0.93782876088464,-1.63714997372317,-1.19700463715115,-0.0315435601202936,-2.31105657015221,0.40025819870958,0.840397362122367,-0.784448766480773,0.248957366678811,-1.06937146411826,0.081053894792915,0.50225927837903,-0.838265154810562,0.901674831687053,0.0438027726014673,-0.255079737737064,-0.339609730822587,1.34897554870549,-0.058305769063877,0.022221351530513,-0.439778115315923,-0.157369306021255,1.46255495523252,1.13647241897067,2.04750737743798,-1.17445044813651,0.675246508088023,0.342125097867305,0.561312301203492,0.180680539889758,-0.567014555648478,0.0699131675842248,0.842585193332272],[2.35143102075651,-0.911623994016276,1.57436378822881,-0.485914047728637,-1.98751739112068,-0.501951149160801,1.09241313425109,-0.400432404017966,-0.0548194949724067,-3.54899912949212,-0.851526800221034,-0.493232804209186,-0.215370507078353,-0.994590107737747,0.392693452230771,-0.340159180635187,0.162322469440055,0.618547238991867,-0.0173850032431949,0.776232144787706,0.701187629322888,-0.315094870855135,1.38936534133281,-0.0542304995038755,0.876107063426866,1.49485905099384,0.417273968924164,0.800387003673299,0.916748067264495,-0.301484882618913,0.457422412858631,1.21685152112832,-0.715819315692021,-0.461549138199587,-4.54283842650104,-4.13357814401372,-4.60429511955352,1.22232001992385,0.870091156924388,0.0437532021532778,0.182081934884352,1.52213512067248,0.283960248412209,1.86418099772478,-0.846715914018536,-2.41380970026913,-0.926673665022203,-1.17854547417432,-1.52304728411648,-0.169316322084897,-1.98106437546427,0.345694531493438,0.779925549867299,-0.239759666207477,0.296415736589983,-1.1359683333129,0.0396256643781161,0.336862132594938,-0.410081919758438,0.793968396825892,0.105699081984043,0.0860633276841223,0.143340651381122,1.20013342620175,-0.157063069942564,0.0295786179602606,0.213103795235385,0.199599593467738,1.05915899800136,0.849595083792179,1.60369764528579,0.379614433260415,0.786143038271409,-0.484261321252098,0.639351161842652,0.275094729264203,-0.244203348615899,0.0113410782841336,0.713317025930038],[1.98979882277973,1.35538516223411,1.32433329134636,0.0672513336216543,-0.691026332842418,-0.921983770944892,-0.303021648740713,0.382880544947518,0.740264166900343,-0.801172689809113,-0.495833099848269,-0.831459451328818,-0.77474155514957,-0.0168072585781767,0.292239190724659,0.175613122494156,0.118495352500674,0.732304550940743,0.411777643923912,-0.0178954544576304,-0.255097433964327,-0.300074020852242,0.498226394539347,0.332221580614521,0.338495374686213,0.538158320271909,0.895754686326222,0.62951823327501,0.617268347502848,0.5044842530816,0.624149294932749,0.854065200586872,-1.29519145158935,-0.80170759202568,-4.20798196491505,-4.2435504712064,-1.28867187168701,0.704050766559277,0.242903079176499,-0.129220554928108,0.427804710296164,0.91604997817249,0.486077227608319,1.76787036294669,-0.896646051387843,-2.24640882856832,-0.838942611606468,-1.26720642905264,-1.25021227119585,0.0322005569690608,-1.88016923533287,0.413549089300427,0.684150438801492,-0.700402439059565,0.236855111374155,-0.832136282998556,0.0712274499443103,0.516267087927257,-0.593283497932134,0.840437985162887,0.0343499390264507,0.00144365879960345,-0.142710449927288,1.19849962890267,-0.0577254998507133,0.132090914656283,-0.24629203653431,0.137168568162909,1.13561480082676,0.871583031548468,1.52114626480825,-0.287592546103022,0.771064475084322,-0.0240835062854422,0.564572130103209,0.142707257634056,-0.356672144967582,-0.0628262946359741,0.575989946312545]],"fixedtz":false,"tzone":""},"evals":["attrs.interactionModel"],"jsHooks":[]}</script>
+<div class="dygraphs html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-928b8b3e3de800b364ce" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-928b8b3e3de800b364ce">{"x":{"attrs":{"labels":["quarter","y","lm","Reg par morceaux","Reg locale","SSM"],"legend":"auto","retainDateWindow":false,"axes":{"x":{"pixelsPerLabel":60,"drawAxis":true},"y":{"drawAxis":true}},"showRangeSelector":true,"dateWindow":["2010-01-01T00:00:00.000Z","2019-12-01T00:00:00.000Z"],"rangeSelectorHeight":40,"rangeSelectorPlotFillColor":" #A7B1C4","rangeSelectorPlotStrokeColor":"#808FAB","interactionModel":"Dygraph.Interaction.defaultModel","stackedGraph":false,"fillGraph":false,"fillAlpha":0.15,"stepPlot":false,"drawPoints":false,"pointSize":1,"drawGapEdgePoints":false,"connectSeparatedPoints":false,"strokeWidth":1,"strokeBorderColor":"white","colors":["black","red","green","blue","purple"],"colorValue":0.5,"colorSaturation":1,"includeZero":false,"drawAxesAtZero":false,"logscale":false,"axisTickSize":3,"axisLineColor":"black","axisLineWidth":0.3,"axisLabelColor":"black","axisLabelFontSize":14,"axisLabelWidth":60,"drawGrid":true,"gridLineWidth":0.3,"rightGap":5,"digitsAfterDecimal":2,"labelsKMB":false,"labelsKMG2":false,"labelsUTC":false,"maxNumberWidth":6,"animatedZooms":false,"mobileDisableYTouch":true,"disableZoom":false},"scale":"quarterly","annotations":[],"shadings":[],"events":[],"format":"date","data":[["2000-04-01T00:00:00.000Z","2000-07-01T00:00:00.000Z","2000-10-01T00:00:00.000Z","2001-01-01T00:00:00.000Z","2001-04-01T00:00:00.000Z","2001-07-01T00:00:00.000Z","2001-10-01T00:00:00.000Z","2002-01-01T00:00:00.000Z","2002-04-01T00:00:00.000Z","2002-07-01T00:00:00.000Z","2002-10-01T00:00:00.000Z","2003-01-01T00:00:00.000Z","2003-04-01T00:00:00.000Z","2003-07-01T00:00:00.000Z","2003-10-01T00:00:00.000Z","2004-01-01T00:00:00.000Z","2004-04-01T00:00:00.000Z","2004-07-01T00:00:00.000Z","2004-10-01T00:00:00.000Z","2005-01-01T00:00:00.000Z","2005-04-01T00:00:00.000Z","2005-07-01T00:00:00.000Z","2005-10-01T00:00:00.000Z","2006-01-01T00:00:00.000Z","2006-04-01T00:00:00.000Z","2006-07-01T00:00:00.000Z","2006-10-01T00:00:00.000Z","2007-01-01T00:00:00.000Z","2007-04-01T00:00:00.000Z","2007-07-01T00:00:00.000Z","2007-10-01T00:00:00.000Z","2008-01-01T00:00:00.000Z","2008-04-01T00:00:00.000Z","2008-07-01T00:00:00.000Z","2008-10-01T00:00:00.000Z","2009-01-01T00:00:00.000Z","2009-04-01T00:00:00.000Z","2009-07-01T00:00:00.000Z","2009-10-01T00:00:00.000Z","2010-01-01T00:00:00.000Z","2010-04-01T00:00:00.000Z","2010-07-01T00:00:00.000Z","2010-10-01T00:00:00.000Z","2011-01-01T00:00:00.000Z","2011-04-01T00:00:00.000Z","2011-07-01T00:00:00.000Z","2011-10-01T00:00:00.000Z","2012-01-01T00:00:00.000Z","2012-04-01T00:00:00.000Z","2012-07-01T00:00:00.000Z","2012-10-01T00:00:00.000Z","2013-01-01T00:00:00.000Z","2013-04-01T00:00:00.000Z","2013-07-01T00:00:00.000Z","2013-10-01T00:00:00.000Z","2014-01-01T00:00:00.000Z","2014-04-01T00:00:00.000Z","2014-07-01T00:00:00.000Z","2014-10-01T00:00:00.000Z","2015-01-01T00:00:00.000Z","2015-04-01T00:00:00.000Z","2015-07-01T00:00:00.000Z","2015-10-01T00:00:00.000Z","2016-01-01T00:00:00.000Z","2016-04-01T00:00:00.000Z","2016-07-01T00:00:00.000Z","2016-10-01T00:00:00.000Z","2017-01-01T00:00:00.000Z","2017-04-01T00:00:00.000Z","2017-07-01T00:00:00.000Z","2017-10-01T00:00:00.000Z","2018-01-01T00:00:00.000Z","2018-04-01T00:00:00.000Z","2018-07-01T00:00:00.000Z","2018-10-01T00:00:00.000Z","2019-01-01T00:00:00.000Z","2019-04-01T00:00:00.000Z","2019-07-01T00:00:00.000Z","2019-10-01T00:00:00.000Z"],[1.41586211509732,0.774997801424671,1.58934473618186,0.155696338451627,-0.592870544090052,0.226483466706928,-2.11982955279129,0.963039511004604,-0.102354145342887,-0.235437739797695,-0.872956909361067,-0.301998258550185,-1.04692941241501,0.384323188988689,0.0957129501847565,1.14523338299717,-0.213261806349485,-0.565139797739445,0.270327162340323,0.480636428926573,-0.30899494171982,0.956330866212962,0.882809256386174,0.233933329001235,1.80334954078876,-0.00742949935788051,1.26204729758417,0.271485623840428,0.560317792180642,0.515613954842187,-0.216150250279235,0.916223583429199,-2.14857189807635,-1.05589084229861,-5.8173949018235,-6.42225601171369,-0.176931502232702,1.78330278769172,0.964283598886451,-0.167783266259136,1.69005476811697,0.509685174055763,1.02110044270685,2.64191319590681,-0.567791159314213,-0.544266244339853,-0.818624262677459,-0.835556962597805,-1.0865971153298,0.591340833640719,-2.15206554747035,-0.0667548924309314,0.474627915152936,-0.726657724383273,0.528715104803079,0.399710151702859,-0.221177127956784,0.312667708892356,-0.331464725175035,0.291725497975426,0.468893620487054,0.274464389114071,0.779562751914264,-0.0882400128349059,-0.662958077650977,1.02301199672081,-0.117723703610573,0.810161345691718,1.08515516810825,0.854537696229252,1.28931692924346,-1.72138986292636,1.05696421980381,0.375199220825206,-0.348435897718624,0.648409405255879,0.247358758149097,-0.312547978856403,-0.707362955303026],[2.16666745160071,1.39230733266585,1.43022777075804,0.611004422177983,-0.435199886802564,-1.0073982027924,-0.706652167102244,-0.168719934421299,0.898893469263742,-0.299321638485596,-0.244154319489067,-0.594253421020616,-0.879078195351211,0.177686800275276,0.291747107834121,0.0787615055977025,0.284686502665339,0.696432923516207,0.372220618365937,-0.252078468000066,-0.388240700078646,0.180189486011415,-0.0551475319720671,0.507307321759059,0.465698276464492,-0.156170829672247,1.14925701019249,1.07739812083033,0.565494055838962,0.615164985423322,0.774643509576431,0.498524870720621,-0.845731473296923,-1.3347920116215,-4.16180719672109,-4.33257467803231,-2.03125628867934,0.372775163906812,-0.312057881063828,-0.0152762320174856,1.26952992118586,-0.97356534544553,1.91944619709107,1.5365209171979,0.509598706861557,-2.2088470527049,-0.52039690026875,-0.618193746179531,-1.39246279574239,-0.584066649204812,-1.22867124115899,-0.963380273294644,-0.0898748797453008,-0.753464534312123,0.872466265163671,-0.425925535680295,-0.550967195632771,-0.45408643542641,0.577983661888651,-0.020298600044313,-0.103254748649614,-0.0672433614235955,0.342088947662037,0.337876655531732,0.0177295035987519,-0.209708076997007,0.0640267437182721,0.0749165785466278,1.34359871714126,0.530574858633547,1.06283821486832,-0.273407982747135,-0.63862518699526,1.03269478528118,-0.375396986019439,-0.116372823212759,-0.337564783683896,-0.424448892560463,-0.0579980920042215],[2.1666674516007,1.39230733266585,1.43022777075804,0.611004422177988,-0.435199886802563,-1.0073982027924,-0.706652167102245,-0.168719934421299,0.898893469263742,-0.299321638485596,-0.244154319489068,-0.594253421020618,-0.879078195351213,0.177686800275274,0.29174710783412,0.0787615055977016,0.284686502665339,0.696432923516207,0.372220618365937,-0.252078468000066,-0.388240700078646,0.180189486011415,-0.0551475319720668,0.50730732175906,0.465698276464493,-0.156170829672248,1.14925701019249,1.07739812083032,0.565494055838964,0.61516498542332,0.77464350957643,0.49852487072062,-0.845731473296925,-1.3347920116215,-4.16180719672109,-5.45975216696013,-4.24806282947323,3.27299568715896,0.9539241917209,0.603751533057832,2.28333749342474,0.789729929822771,2.02398163845228,3.40549043137221,-0.241465046258972,-1.62639975744465,-0.52734906663361,-1.17364965360114,-0.990335520302079,-0.00591028364282498,-1.97552002063702,-0.0757133298069711,0.914087799105774,-0.724265648527596,1.09880135161737,-1.19430002256042,0.0772538318992669,0.299164821293855,0.0852267156620138,0.589225156706141,0.211111671152698,-0.343511925458261,0.0802480579858347,1.26830426545073,0.0433267018993632,0.11138447923408,-0.644222611761023,0.146403654124689,1.84494928170122,1.09878096317707,2.03882303563461,-0.991647536716524,0.499430014774944,1.17971838047939,0.34287099705011,0.258068994878355,-0.184470695340006,-0.107398375808229,1.19257941560873],[1.85993035337644,1.37805239637792,1.44899870572357,-0.830133205952788,-1.67416009716306,-0.967347783809157,0.222827586452927,0.0981272548831179,0.306278571330743,-2.66602838838832,-0.667914854893066,-0.20522329134099,-0.720902907560515,0.488579969751808,0.113716144259308,-1.01417280182367,0.140182324194549,0.629998478779101,0.13244329932127,0.0523096540796322,-0.14007355193523,-0.539081848066094,-0.682401580836319,0.525824563877191,0.262287347145289,0.432663817173871,1.23361473308244,1.32245071259661,0.639440837605238,0.340328444667993,0.589037934428541,0.290805722519924,0.105487915192423,-1.12104928053172,-4.33797486986471,-3.67663571491799,-2.54136124836753,1.15447748866157,-0.28427853098055,-0.085850255280656,1.40421421411152,-0.854065323370179,1.53951342566256,2.11673140104969,-1.16638280506997,-2.50922063838528,-0.976020295636038,-1.48521289086239,-1.57403276481187,-0.375362760858811,-1.91567742380718,-0.166523470522776,0.714986773092193,-0.861087515274563,0.593032697883354,-1.08191067636615,-0.317784069718847,-0.0209726111293695,-0.0105578966281777,0.424655769617596,-0.0344526214558849,-0.0936013683466321,-0.0204582176658461,1.09425789529321,-0.17580192263369,-0.00337425978626849,-0.107691376267556,-0.126814983910925,1.53762858806786,0.76751824008852,1.58772324492364,-0.654908471557975,0.204032594254317,0.192021844090296,0.374464221589993,0.189519372610251,-0.377716509272824,-0.216643135288873,0.733591960136623],[2.15887684289949,1.12445551828687,1.36243327992573,0.330498898158449,-0.815781789611812,-0.871155211264458,-0.689942249487217,-0.150674557095182,0.768768245949967,-0.53159873064886,-0.422435327464896,-0.641425994282906,-0.89299830872109,0.184400442292903,0.340760152165458,0.0280057285482527,0.209915243307042,0.647875255859382,0.303759390962908,-0.191273926299106,-0.34424485745236,0.0180914635237561,-0.137361237311146,0.445777848013657,0.513023821863283,-0.0119195118711383,1.3324797032444,1.07535238257701,0.559750215814971,0.612276417695628,0.760543157658529,0.488126579054718,-0.863036880947899,-1.36131785260663,-4.35404206987396,-4.76262034834958,-1.72042512636862,0.977643132132919,0.50081528513595,0.49545759510209,1.72224388723916,-0.673281610946038,1.63569220838068,2.13281163517246,-0.643488025524039,-1.87646391158699,-0.553082653943016,-0.989041044353449,-0.929698424291492,-0.151271254817135,-1.498731070673,-0.0157686018870819,0.693663813963102,-0.750618613891036,0.571545421938828,-0.988758635484257,-0.102762739560524,0.0740756156485573,-0.0394933296912323,0.338474462368064,0.0138846669104278,-0.234638415116948,-0.00490111899471435,0.953948827923494,-0.109063587558268,-0.0374074525066959,-0.345809669770256,0.00559183796342178,1.37158450002996,0.752027048849504,1.35454266167216,-0.746057028258636,0.152020255828722,0.510107604547379,0.434632586995387,0.172860016340984,-0.262756493542045,-0.00843573945902476,0.843598410283915]],"fixedtz":false,"tzone":""},"evals":["attrs.interactionModel"],"jsHooks":[]}</script>
 </div>
 </div>
 </div>
@@ -1247,23 +1247,10 @@ Exercice facultatif
 <li><p>Estimer un nouveau modèle espace-état.</p></li>
 <li><p>Utiliser les variables exogènes du modèle jusqu’en 2023T1 (on peut pour cela appliquer la fonction <code>tvCoef::full_exogeneous_matrix()</code> sur le modèle <code>dynlm</code>) et la dernière ligne de la composante <code>"smoothed_states"</code> pour effectuer des prévisions sur 2023T1.</p></li>
 </ol>
-<div class="callout-important callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-caption-container flex-fill">
-Attention
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Au moment de la rédaction du TP, toutes les données du 2023T1 ne sont pas disponibles, la prévision ne peut donc pas être faite jusqu’à cette date. Toutefois, cet exercice vous permet de voir comment procéder lorsque ces données seront disponibles. Ce TP sera mis à jour le 28 mars avec les nouvelles données.</p>
-</div>
-</div>
 </div>
 </div>
 <div class="callout-caution callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -1272,7 +1259,7 @@ Indice (création des indicatrices)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-20" class="callout-20-contents callout-collapse collapse">
+<div id="callout-19" class="callout-19-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>On pourra utiliser le programme suivant pour créer les indicatrices :</p>
 <div class="cell">
@@ -1287,7 +1274,7 @@ Indice (création des indicatrices)
 </div>
 </div>
 <div class="callout-tip callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-21-contents" aria-controls="callout-21" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -1296,7 +1283,7 @@ Solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-21" class="callout-21-contents callout-collapse collapse">
+<div id="callout-20" class="callout-20-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Estimation du modèle de régression linéaire :</p>
 <div class="cell">
@@ -1328,28 +1315,28 @@ dynlm(formula = prod_c5 ~ overhang_ipi1_c5 + insee_bc_c5_m3 +
     1) + ind2020Q1 + ind2020Q2 + ind2020Q3 + ind2020Q4, data = data)
 
 Residuals:
-    Min      1Q  Median      3Q     Max 
--3.0369 -0.3704  0.0000  0.4409  1.8337 
+     Min       1Q   Median       3Q      Max 
+-2.50121 -0.40188  0.00267  0.48994  1.57418 
 
 Coefficients:
                             Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)                -15.32223    2.84160  -5.392 3.50e-07 ***
-overhang_ipi1_c5             0.13436    0.02188   6.141 1.08e-08 ***
-insee_bc_c5_m3               0.14237    0.02581   5.516 2.00e-07 ***
-insee_oscd_c5_m2            -0.04236    0.01389  -3.048  0.00283 ** 
-diff(insee_tppre_c5_m3, 1)   0.02288    0.01295   1.767  0.07973 .  
-diff(bdf_tuc_c5_m2, 1)       0.01797    0.00807   2.227  0.02780 *  
-ind2020Q1                   -5.02746    0.84001  -5.985 2.27e-08 ***
-ind2020Q2                  -13.43482    1.18843 -11.305  &lt; 2e-16 ***
-ind2020Q3                   21.85700    0.96497  22.651  &lt; 2e-16 ***
-ind2020Q4                    2.65855    0.84700   3.139  0.00213 ** 
+(Intercept)                -6.924304   3.182453  -2.176   0.0315 *  
+overhang_ipi1_c5            0.115792   0.020951   5.527 1.91e-07 ***
+insee_bc_c5_m3              0.065321   0.028967   2.255   0.0259 *  
+insee_oscd_c5_m2           -0.009964   0.014757  -0.675   0.5008    
+diff(insee_tppre_c5_m3, 1)  0.026459   0.011405   2.320   0.0220 *  
+diff(bdf_tuc_c5_m2, 1)      0.361476   0.077713   4.651 8.49e-06 ***
+ind2020Q1                  -5.195550   0.788939  -6.585 1.23e-09 ***
+ind2020Q2                  -7.650566   1.654785  -4.623 9.53e-06 ***
+ind2020Q3                  16.223534   1.482828  10.941  &lt; 2e-16 ***
+ind2020Q4                   3.324056   0.810984   4.099 7.55e-05 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 0.8198 on 121 degrees of freedom
+Residual standard error: 0.7705 on 121 degrees of freedom
   (131 observations effacées parce que manquantes)
-Multiple R-squared:  0.9313,    Adjusted R-squared:  0.9262 
-F-statistic: 182.3 on 9 and 121 DF,  p-value: &lt; 2.2e-16</code></pre>
+Multiple R-squared:  0.9393,    Adjusted R-squared:  0.9348 
+F-statistic: 208.1 on 9 and 121 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>prev_oos_lm_complet <span class="ot">&lt;-</span> <span class="fu">oos_prev</span>(model_c5_complet)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -1368,24 +1355,23 @@ F-statistic: 182.3 on 9 and 121 DF,  p-value: &lt; 2.2e-16</code></pre>
 <span id="cb82-11"><a href="#cb82-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_intercept =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_intercept =</span> <span class="cn">FALSE</span>,</span>
 <span id="cb82-12"><a href="#cb82-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">var_variables =</span> <span class="fl">0.01</span>, <span class="at">fixed_var_variables =</span> <span class="cn">FALSE</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Comme vous allez le voir, les soldes d’opinion de l’Insee de mars ne sont pas encore disponibles au moment de l’écriture du TP : la prévisions de 2023T1 ne peut donc pas être calculé. Toutefois, ce code reste valide si vous utilisez un autre modèle où les données sont disponibles. Par ailleurs, ce TP sera mis à jour au moment de la publication de ces soldes d’opinion.</p>
+<p>Enfin, pour calculer les prévisions</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>X_variables <span class="ot">=</span> <span class="fu">full_exogeneous_matrix</span>(model_c5_complet)</span>
-<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Comme vous voyez ici, les soldes d'opinion de l'Insee de mars ne sont pas encore disponibles au moment de l'écrit</span></span>
-<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a><span class="fu">window</span>(X_variables, <span class="at">start =</span> <span class="dv">2022</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a><span class="fu">window</span>(X_variables, <span class="at">start =</span> <span class="dv">2022</span>)</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        (Intercept) overhang_ipi1_c5 insee_bc_c5_m3 insee_oscd_c5_m2
 2022 Q1           1         7.629539          108.0              4.5
 2022 Q2           1         2.870669          105.8             -2.2
 2022 Q3           1         2.663170           97.9            -16.0
 2022 Q4           1         1.979440           96.2            -24.6
-2023 Q1           1         1.737138             NA            -23.7
+2023 Q1           1         1.737138           98.7            -23.0
         diff(insee_tppre_c5_m3, 1) diff(bdf_tuc_c5_m2, 1) ind2020Q1 ind2020Q2
-2022 Q1                      -20.1                   0.38         0         0
-2022 Q2                        0.1                  -3.20         0         0
-2022 Q3                       -9.7                  -0.35         0         0
-2022 Q4                       10.1                   3.97         0         0
-2023 Q1                         NA                     NA         0         0
+2022 Q1                      -20.1                  -0.23         0         0
+2022 Q2                        0.1                   0.53         0         0
+2022 Q3                       -9.7                   0.57         0         0
+2022 Q4                       10.1                  -1.88         0         0
+2023 Q1                       -1.9                  -0.49         0         0
         ind2020Q3 ind2020Q4
 2022 Q1         0         0
 2022 Q2         0         0
@@ -1409,8 +1395,8 @@ F-statistic: 182.3 on 9 and 121 DF,  p-value: &lt; 2.2e-16</code></pre>
 <span id="cb85-14"><a href="#cb85-14" aria-hidden="true" tabindex="-1"></a><span class="fu">dygraph</span>(data_forecasts) <span class="sc">%&gt;%</span> </span>
 <span id="cb85-15"><a href="#cb85-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dyRangeSelector</span>(<span class="at">dateWindow =</span> <span class="fu">c</span>(<span class="st">"2018-01-01"</span>, <span class="st">"2023-03-01"</span>))</span></code><button title="Copier vers le presse-papier" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="dygraphs html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-0974ed3186f5724342c7" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-0974ed3186f5724342c7">{"x":{"attrs":{"labels":["quarter","y","lm","SSM"],"legend":"auto","retainDateWindow":false,"axes":{"x":{"pixelsPerLabel":60}},"showRangeSelector":true,"dateWindow":["2018-01-01T00:00:00.000Z","2023-03-01T00:00:00.000Z"],"rangeSelectorHeight":40,"rangeSelectorPlotFillColor":" #A7B1C4","rangeSelectorPlotStrokeColor":"#808FAB","interactionModel":"Dygraph.Interaction.defaultModel"},"scale":"quarterly","annotations":[],"shadings":[],"events":[],"format":"date","data":[["2010-01-01T00:00:00.000Z","2010-04-01T00:00:00.000Z","2010-07-01T00:00:00.000Z","2010-10-01T00:00:00.000Z","2011-01-01T00:00:00.000Z","2011-04-01T00:00:00.000Z","2011-07-01T00:00:00.000Z","2011-10-01T00:00:00.000Z","2012-01-01T00:00:00.000Z","2012-04-01T00:00:00.000Z","2012-07-01T00:00:00.000Z","2012-10-01T00:00:00.000Z","2013-01-01T00:00:00.000Z","2013-04-01T00:00:00.000Z","2013-07-01T00:00:00.000Z","2013-10-01T00:00:00.000Z","2014-01-01T00:00:00.000Z","2014-04-01T00:00:00.000Z","2014-07-01T00:00:00.000Z","2014-10-01T00:00:00.000Z","2015-01-01T00:00:00.000Z","2015-04-01T00:00:00.000Z","2015-07-01T00:00:00.000Z","2015-10-01T00:00:00.000Z","2016-01-01T00:00:00.000Z","2016-04-01T00:00:00.000Z","2016-07-01T00:00:00.000Z","2016-10-01T00:00:00.000Z","2017-01-01T00:00:00.000Z","2017-04-01T00:00:00.000Z","2017-07-01T00:00:00.000Z","2017-10-01T00:00:00.000Z","2018-01-01T00:00:00.000Z","2018-04-01T00:00:00.000Z","2018-07-01T00:00:00.000Z","2018-10-01T00:00:00.000Z","2019-01-01T00:00:00.000Z","2019-04-01T00:00:00.000Z","2019-07-01T00:00:00.000Z","2019-10-01T00:00:00.000Z","2020-01-01T00:00:00.000Z","2020-04-01T00:00:00.000Z","2020-07-01T00:00:00.000Z","2020-10-01T00:00:00.000Z","2021-01-01T00:00:00.000Z","2021-04-01T00:00:00.000Z","2021-07-01T00:00:00.000Z","2021-10-01T00:00:00.000Z","2022-01-01T00:00:00.000Z","2022-04-01T00:00:00.000Z","2022-07-01T00:00:00.000Z","2022-10-01T00:00:00.000Z","2023-01-01T00:00:00.000Z"],[-0.167783266259136,1.69005476811697,0.509685174055763,1.02110044270685,2.64191319590681,-0.567791159314213,-0.544266244339853,-0.818624262677459,-0.835556962597805,-1.0865971153298,0.591340833640719,-2.15206554747035,-0.0667548924309314,0.474627915152936,-0.726657724383273,0.528715104803079,0.399710151702859,-0.221177127956784,0.312667708892356,-0.331464725175035,0.291725497975426,0.468893620487054,0.274464389114071,0.779562751914264,-0.0882400128349059,-0.662958077650977,1.02301199672081,-0.117723703610573,0.810161345691718,1.08515516810825,0.854537696229252,1.28931692924346,-1.72138986292636,1.05696421980381,0.375199220825206,-0.348435897718624,0.648409405255879,0.247358758149097,-0.312547978856403,-0.707362955303026,-5.95847459504975,-18.6416116870877,24.2741503395746,3.89186669773947,0.280394795872585,-0.518957611005477,-0.54977177163672,-0.461241054975869,1.70018966711718,-0.302637750429946,-0.305796695603477,-0.38201388732837,null],[-0.285131012963285,0.294176444871434,0.146247272920124,0.530413103342053,0.951601422444633,0.143594259766169,-1.41780794439257,-0.718750967694256,-0.477083663136255,-1.36744384687437,-0.634723667928581,-1.16112441366732,-0.514199523951678,-0.255773413340787,-0.329456929063504,-0.243691034763245,-0.0481438332498072,-0.486726194331041,-0.130795751046643,-0.230152596682773,0.215249827142423,-0.214768757200362,0.196409184907548,-0.174700017956703,0.335988013579408,0.0471551844127069,-0.192671705032358,0.339071832509344,-0.173907760421184,0.946017270360565,0.687954969368935,0.912879271643145,-0.106673151745162,-0.26289088349506,0.162460214718729,-0.0272176597122662,-0.156897756149063,-0.654286861548352,-0.0669394169383846,-0.390798097393705,-1.0441787782346,-4.80121604914978,2.27540636803925,1.20692733593601,0.952730545373821,1.24903434276838,1.51117770869571,1.00807848098337,0.254368544829909,0.179734078916332,-0.585520209657327,-0.00122990449629057,null],[-0.168521202446689,0.457376951759377,0.821205159976189,0.505643732671853,1.75456372052681,-0.87233278028428,-2.2295398029819,-0.762499909279015,-1.19954572312388,-1.25876772356998,-0.0103391204775634,-1.87047955070037,0.395221446750683,0.669143785554234,-0.681735261448156,0.250797210449291,-0.831247569488232,0.0793693114196421,0.554268177828352,-0.595480221762142,0.865836832455889,0.033037451555268,0.0129694708627766,-0.165523295373188,1.19329925425909,-0.0124898481258164,0.117595474068913,-0.227253954720743,0.163016026959875,1.13264498311443,0.893472330305014,1.56747477491725,-0.25988589943692,0.78025881494476,0.0292815609190484,0.555755861105386,0.138917195224456,-0.337443610555407,-0.0581141006318268,0.58454237030369,0.302956172596338,-13.3470784672341,6.37518726718223,2.59578099806918,2.4986290269326,0.627553055280822,0.212736488856238,0.324364198195629,0.465183564767132,-0.292870578675512,-0.00639995641406244,-1.30215177373596,null]]},"evals":["attrs.interactionModel"],"jsHooks":[]}</script>
+<div class="dygraphs html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8f735e529339a41a7382" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-8f735e529339a41a7382">{"x":{"attrs":{"labels":["quarter","y","lm","SSM"],"legend":"auto","retainDateWindow":false,"axes":{"x":{"pixelsPerLabel":60}},"showRangeSelector":true,"dateWindow":["2018-01-01T00:00:00.000Z","2023-03-01T00:00:00.000Z"],"rangeSelectorHeight":40,"rangeSelectorPlotFillColor":" #A7B1C4","rangeSelectorPlotStrokeColor":"#808FAB","interactionModel":"Dygraph.Interaction.defaultModel"},"scale":"quarterly","annotations":[],"shadings":[],"events":[],"format":"date","data":[["2010-01-01T00:00:00.000Z","2010-04-01T00:00:00.000Z","2010-07-01T00:00:00.000Z","2010-10-01T00:00:00.000Z","2011-01-01T00:00:00.000Z","2011-04-01T00:00:00.000Z","2011-07-01T00:00:00.000Z","2011-10-01T00:00:00.000Z","2012-01-01T00:00:00.000Z","2012-04-01T00:00:00.000Z","2012-07-01T00:00:00.000Z","2012-10-01T00:00:00.000Z","2013-01-01T00:00:00.000Z","2013-04-01T00:00:00.000Z","2013-07-01T00:00:00.000Z","2013-10-01T00:00:00.000Z","2014-01-01T00:00:00.000Z","2014-04-01T00:00:00.000Z","2014-07-01T00:00:00.000Z","2014-10-01T00:00:00.000Z","2015-01-01T00:00:00.000Z","2015-04-01T00:00:00.000Z","2015-07-01T00:00:00.000Z","2015-10-01T00:00:00.000Z","2016-01-01T00:00:00.000Z","2016-04-01T00:00:00.000Z","2016-07-01T00:00:00.000Z","2016-10-01T00:00:00.000Z","2017-01-01T00:00:00.000Z","2017-04-01T00:00:00.000Z","2017-07-01T00:00:00.000Z","2017-10-01T00:00:00.000Z","2018-01-01T00:00:00.000Z","2018-04-01T00:00:00.000Z","2018-07-01T00:00:00.000Z","2018-10-01T00:00:00.000Z","2019-01-01T00:00:00.000Z","2019-04-01T00:00:00.000Z","2019-07-01T00:00:00.000Z","2019-10-01T00:00:00.000Z","2020-01-01T00:00:00.000Z","2020-04-01T00:00:00.000Z","2020-07-01T00:00:00.000Z","2020-10-01T00:00:00.000Z","2021-01-01T00:00:00.000Z","2021-04-01T00:00:00.000Z","2021-07-01T00:00:00.000Z","2021-10-01T00:00:00.000Z","2022-01-01T00:00:00.000Z","2022-04-01T00:00:00.000Z","2022-07-01T00:00:00.000Z","2022-10-01T00:00:00.000Z","2023-01-01T00:00:00.000Z"],[-0.167783266259136,1.69005476811697,0.509685174055763,1.02110044270685,2.64191319590681,-0.567791159314213,-0.544266244339853,-0.818624262677459,-0.835556962597805,-1.0865971153298,0.591340833640719,-2.15206554747035,-0.0667548924309314,0.474627915152936,-0.726657724383273,0.528715104803079,0.399710151702859,-0.221177127956784,0.312667708892356,-0.331464725175035,0.291725497975426,0.468893620487054,0.274464389114071,0.779562751914264,-0.0882400128349059,-0.662958077650977,1.02301199672081,-0.117723703610573,0.810161345691718,1.08515516810825,0.854537696229252,1.28931692924346,-1.72138986292636,1.05696421980381,0.375199220825206,-0.348435897718624,0.648409405255879,0.247358758149097,-0.312547978856403,-0.707362955303026,-5.95847459504975,-18.6416116870877,24.2741503395746,3.89186669773947,0.280394795872585,-0.518957611005477,-0.54977177163672,-0.461241054975869,1.70018966711718,-0.302637750429946,-0.305796695603477,-0.38201388732837,null],[-0.21874822111444,1.14678994397449,-1.07831640780086,1.75823059116731,1.48895072193119,0.37477622629234,-2.21877122269024,-0.533186676518109,-0.675278494415403,-1.37371361342799,-0.589802104172525,-1.27997452197818,-1.00573199947518,-0.117249318837291,-0.804151284179511,0.875025283151804,-0.55641457136398,-0.554263488047868,-0.451913336076935,0.527495944237418,-0.051735828063333,-0.122082867457921,-0.149780832752672,0.287827436626796,0.312498711127092,0.00784567665297976,-0.231881337640345,-0.042953644343705,0.0756242853097573,1.31044613737323,0.517035494114748,1.07092634485028,-0.320823488632073,-0.601648912345408,1.09794988575385,-0.378203169754384,-0.110824763627969,-0.279127473912481,-0.424673216670773,0.0249304432654448,-0.771194908141357,-11.3145390981881,8.57637124535682,0.430534046352304,1.02337487304706,1.46923726962256,2.1166916395762,0.76834156038799,0.243863593173703,0.566903200622986,-0.0960188930294111,-0.592422425124903,-0.274222558724507],[0.448193181636783,1.74909574904903,-0.747387440517036,1.55707305286648,2.10986011672255,-0.661130838174589,-1.90111356851479,-0.57690732242507,-1.00029602753054,-1.23040678318521,-0.163601932729755,-1.6389752902439,-0.0452075795833396,0.670958163887926,-0.764353705691536,0.559612779833786,-1.00528876621862,-0.113491240681419,0.146884086466711,-0.0464372456697728,0.322041919655856,0.0113606871745559,-0.247753242112387,-0.00754505051094767,0.933438139789846,-0.112607023166491,-0.0383572260157961,-0.366357888104595,0.0150734076176383,1.44345730985665,0.751413370699418,1.35363263712115,-0.767153668298033,0.145546259684851,0.543167130965691,0.427190636391591,0.178706575186847,-0.236767520157501,-0.00800157945751501,0.875415205410301,0.265086737304131,-17.0550982944271,11.2943408965797,2.00909572598202,2.19604052206082,0.843434888678343,0.445620220575049,0.153492629884777,0.640066285713888,-0.0490345045999437,0.156869145256114,-1.05439598195343,-0.282767584688101]]},"evals":["attrs.interactionModel"],"jsHooks":[]}</script>
 </div>
 </div>
 </div>

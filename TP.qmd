@@ -132,7 +132,7 @@ L'objet précédent est une liste qui contient différentes informations, notamm
 
 - `model` : le modèle `dynlm` estimé ;
 
-- `breakdates` : la date de rupture : 2008T3.
+- `breakdates` : la date de rupture : 2008T4.
 
 Analysons maintenant les erreurs de prévision :
 
@@ -190,11 +190,11 @@ Cela peut être fait avec la fonction `car::linearHypothesis()` :
 ```{r}
 #| label: linear-constant
 # on rejette H0 => non constance des coefficients
-car::linearHypothesis(reg_morceaux$model, "`(Intercept)_2008.5` = `(Intercept)_2019.75`")
+car::linearHypothesis(reg_morceaux$model, "`(Intercept)_2008.75` = `(Intercept)_2019.75`")
 # on rejette H0 => non constance des coefficients
-car::linearHypothesis(reg_morceaux$model, "overhang_ipi1_c5_2019.75 = overhang_ipi1_c5_2008.5")
+car::linearHypothesis(reg_morceaux$model, "overhang_ipi1_c5_2019.75 = overhang_ipi1_c5_2008.75")
 # on ne rejette pas H0 => constance des coefficients
-car::linearHypothesis(reg_morceaux$model, "`diff(insee_tppre_c5_m3, 1)_2019.75` = `diff(insee_tppre_c5_m3, 1)_2008.5`")
+car::linearHypothesis(reg_morceaux$model, "`diff(insee_tppre_c5_m3, 1)_2019.75` = `diff(insee_tppre_c5_m3, 1)_2008.75`")
 ```
 :::
 
@@ -526,8 +526,8 @@ Pour que cette fonction marche, il faut parfois jouer sur les paramètres `var_i
 ```{r}
 #| label: ssm-lm-oos
 model_ssm_oos <- ssm_lm_oos(model_c5,
-       var_intercept = 0.01, fixed_var_intercept = FALSE,
-       var_variables = 0.01, fixed_var_variables = FALSE)
+       var_intercept = 0.001, fixed_var_intercept = FALSE,
+       var_variables = 0.001, fixed_var_variables = FALSE)
 res_ssm_oos <- y - model_ssm_oos$prevision
 
 rmse_ssm <- c(IS = rmse(res_ssm_is), OOS = rmse(res_ssm_oos))
@@ -563,14 +563,6 @@ L'objectif de cet exercice est d'estimer un nouveau modèle jusqu'en 2022T4 pour
 3. Estimer un nouveau modèle espace-état.
 
 4. Utiliser les variables exogènes du modèle jusqu'en 2023T1 (on peut pour cela appliquer la fonction `tvCoef::full_exogeneous_matrix()` sur le modèle `dynlm`) et la dernière ligne de la composante `"smoothed_states"` pour effectuer des prévisions sur 2023T1.
-
-:::: {.callout-important}
-## Attention
-
-Au moment de la rédaction du TP, toutes les données du 2023T1 ne sont pas disponibles, la prévision ne peut donc pas être faite jusqu'à cette date.
-Toutefois, cet exercice vous permet de voir comment procéder lorsque ces données seront disponibles.
-Ce TP sera mis à jour le 28 mars avec les nouvelles données.
-:::
 ::::
 
 ::: {.callout-caution collapse="true"}
@@ -632,14 +624,11 @@ model_ssm_complet_oos <- ssm_lm_oos(model_c5_complet, date = 18*4,
        var_variables = 0.01, fixed_var_variables = FALSE)
 ```
 
-Comme vous allez le voir, les soldes d'opinion de l'Insee de mars ne sont pas encore disponibles au moment de l'écriture du TP : la prévisions de 2023T1 ne peut donc pas être calculé.
-Toutefois, ce code reste valide si vous utilisez un autre modèle où les données sont disponibles.
-Par ailleurs, ce TP sera mis à jour au moment de la publication de ces soldes d'opinion.
+Enfin, pour calculer les prévisions
 
 ```{r}
 #| label: graph-final
 X_variables = full_exogeneous_matrix(model_c5_complet)
-# Comme vous voyez ici, les soldes d'opinion de l'Insee de mars ne sont pas encore disponibles au moment de l'écrit
 window(X_variables, start = 2022)
 prevs_lm <- rowSums(X_variables %*% diag(coef(model_c5_complet)))
 prevs_lm <- prevs_lm[length(prevs_lm)]
