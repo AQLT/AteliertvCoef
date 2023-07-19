@@ -9,6 +9,6 @@ RUN apt-get update --yes && \
 
 # Install R package and its dependencies
 RUN Rscript -e 'install.packages(c("RProtoBuf", "strucchange", "dygraphs","patchwork","forecast","car"))' && \
-    Rscript -e 'remotes::install_github("palatej/rjd3toolkit")' && \
-    Rscript -e 'remotes::install_github("palatej/rjd3sts")' && \
-    Rscript -e 'remotes::install_github("AQLT/tvCoef")'
+    Rscript -e 'remotes::install_github("rjdemetra/rjd3toolkit")' && \
+    Rscript -e 'remotes::install_github("rjdemetra/rjd3sts")' && \
+    Rscript -e 'remotes::install_github("InseeFrLab/tvCoef")'
