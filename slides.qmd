@@ -21,6 +21,7 @@ date-format: "D MMMM YYYY"
 lang: fr
 ---
 
+
 ## Introduction
 
 Sur longue période, les institutions, les normes de sociétés ainsi que les comportements des agents économiques évoluent, induisant des changements dans la dynamique des séries économiques étudiées.
@@ -309,7 +310,7 @@ Avec $K_b(x)=\frac 1 b K(x/b)$ une fonction de noyau pour pondérer les observat
 Remarque :
 
 -   Si $b\geq1$ on utilise toutes les données pour chaque estimation.\
--   Si $b=20$ le poids donné à toutes les données se rapproche de 1, estimation $\simeq$ à la régression linéaire
+-   Si $b \rightarrow 20$ le poids associé à chaque donnée tend à devenir le même pour toutes, estimation $\simeq$ à la régression linéaire
 
 ## 
 
@@ -341,12 +342,6 @@ readRDS("graphs_atelier/plot_tvlm.RDS")
 
 ```{r}
 readRDS("graphs_atelier/oos_tvlm.RDS")
-```
-
-## 
-
-```{r}
-readRDS("graphs_atelier/plot_coef_tvlm.RDS")
 ```
 
 
@@ -538,7 +533,6 @@ Sur `tvCoef` : documentation, gestion des retards de la variable endogène, amé
 Autour cette l'étude : séminaire D2E + document de travail
 
 Autres études : analyse de ces méthodes pour la CJO
-
 
 
 
